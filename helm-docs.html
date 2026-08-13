@@ -1,0 +1,2958 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helm — полная документация библиотеки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f3ea;
+    --paper-2:#efe9d9;
+    --ink:#1c2431;
+    --ink-soft:#3b4557;
+    --brass:#b8863c;
+    --brass-deep:#8f6526;
+    --brass-light:#e4c07d;
+    --navy:#141b26;
+    --navy-2:#1e2836;
+    --line:#d8cfb6;
+    --green:#4f7a5c;
+    --red:#a5473a;
+    --blue:#3e6b8a;
+    --radius:3px;
+    --maxw:1180px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.6;
+  }
+  ::selection{background:var(--brass-light); color:var(--navy);}
+
+  h1,h2,h3,h4{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    color:var(--navy);
+    letter-spacing:-0.01em;
+    margin:0 0 .4em 0;
+  }
+  code, pre, .mono{
+    font-family:'JetBrains Mono',monospace;
+  }
+  a{color:var(--brass-deep);}
+
+  /* ===== TOP HERO ===== */
+  .hero{
+    background:
+      radial-gradient(1100px 500px at 15% -10%, rgba(184,134,60,.20), transparent 60%),
+      linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%);
+    color:#eee4cd;
+    padding:76px 32px 64px;
+    position:relative;
+    overflow:hidden;
+    border-bottom:6px solid var(--brass);
+  }
+  .hero::after{
+    content:"";
+    position:absolute; right:-120px; top:-120px;
+    width:460px;height:460px;border-radius:50%;
+    border:1px solid rgba(228,192,125,.18);
+  }
+  .hero::before{
+    content:"";
+    position:absolute; right:-40px; top:-40px;
+    width:320px;height:320px;border-radius:50%;
+    border:1px solid rgba(228,192,125,.14);
+  }
+  .hero-inner{max-width:var(--maxw); margin:0 auto; position:relative;}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--brass-light);
+    border:1px solid rgba(228,192,125,.35);
+    padding:6px 12px; border-radius:100px;
+    margin-bottom:22px;
+  }
+  .wheel{width:14px;height:14px;position:relative; display:inline-block;}
+  .wheel svg{width:100%;height:100%;}
+  .hero h1{
+    color:#fbf6e8;
+    font-size:clamp(38px,6vw,64px);
+    line-height:1.02;
+    margin-bottom:18px;
+  }
+  .hero h1 em{
+    font-style:normal; color:var(--brass-light);
+  }
+  .hero p.lead{
+    max-width:700px; font-size:18.5px; color:#cfc7ad;
+    margin-bottom:0;
+  }
+  .hero-meta{
+    display:flex; gap:28px; margin-top:38px; flex-wrap:wrap;
+    font-family:'JetBrains Mono',monospace; font-size:13px; color:#9fa6b8;
+  }
+  .hero-meta b{color:var(--brass-light); font-weight:500;}
+
+  /* ===== LAYOUT ===== */
+  .layout{
+    max-width:var(--maxw);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:270px 1fr;
+    gap:48px;
+    padding:48px 32px 120px;
+    align-items:start;
+  }
+  @media (max-width:960px){
+    .layout{grid-template-columns:1fr; padding:32px 18px 80px;}
+    .sidebar{position:relative !important; top:0 !important; max-height:none !important; order:2;}
+  }
+
+  .sidebar{
+    position:sticky; top:24px;
+    max-height:calc(100vh - 48px);
+    overflow-y:auto;
+    padding-right:8px;
+    border-right:1px solid var(--line);
+  }
+  .sidebar::-webkit-scrollbar{width:6px;}
+  .sidebar::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .side-group{margin-bottom:22px;}
+  .side-group > .side-title{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--brass-deep); font-weight:600;
+    margin-bottom:8px;
+  }
+  .side-group ul{list-style:none; margin:0; padding:0;}
+  .side-group li a{
+    display:block;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    text-decoration:none;
+    padding:4px 0 4px 2px;
+    border-left:2px solid transparent;
+    padding-left:10px;
+    transition:.15s;
+  }
+  .side-group li a:hover{color:var(--brass-deep); border-left-color:var(--brass);}
+  .side-group li.sub a{padding-left:22px; font-size:12.5px; color:#7c8394;}
+
+  main{min-width:0;}
+
+  /* ===== INTRO BLOCK ===== */
+  .intro{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-left:4px solid var(--brass);
+    border-radius:var(--radius);
+    padding:26px 30px;
+    margin-bottom:56px;
+  }
+  .intro h2{font-size:22px; margin-bottom:12px;}
+  .intro p{margin:0 0 10px 0; color:var(--ink-soft);}
+  .intro p:last-child{margin-bottom:0;}
+
+  .arch-diagram{
+    display:grid; grid-template-columns:1fr 1fr; gap:18px;
+    margin:22px 0 56px;
+  }
+  @media (max-width:640px){.arch-diagram{grid-template-columns:1fr;}}
+  .arch-box{
+    border:1px solid var(--line); background:#fffdf6;
+    border-radius:var(--radius); padding:20px 22px;
+  }
+  .arch-box h3{font-size:16px; margin-bottom:8px; display:flex; align-items:center; gap:8px;}
+  .arch-box .tag{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px;
+    background:var(--navy); color:var(--brass-light);
+    padding:2px 8px; border-radius:100px; letter-spacing:.06em;
+  }
+  .arch-box p{font-size:14px; color:var(--ink-soft); margin:0;}
+  .arch-box ul{margin:10px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft);}
+
+  /* ===== FILE SECTION ===== */
+  .file-section{
+    margin-bottom:64px;
+    padding-top:12px;
+    scroll-margin-top:20px;
+  }
+  .file-head{
+    display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+    border-bottom:2px solid var(--navy);
+    padding-bottom:10px; margin-bottom:8px;
+  }
+  .file-head h2{
+    font-size:26px; margin:0;
+  }
+  .file-path{
+    font-family:'JetBrains Mono',monospace; font-size:13px;
+    color:#8a8365; background:var(--paper-2);
+    padding:2px 9px; border-radius:100px; border:1px solid var(--line);
+  }
+  .file-role{
+    color:var(--ink-soft); font-size:15px; margin:10px 0 28px 0; max-width:840px;
+  }
+
+  /* component card */
+  .component{
+    margin-bottom:34px;
+    scroll-margin-top:20px;
+  }
+  .component-head{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px; font-weight:600; letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:3px 9px; border-radius:100px;
+    border:1px solid transparent;
+  }
+  .badge.class{background:#e7eef4; color:var(--blue); border-color:#c7d8e5;}
+  .badge.mixin{background:#f0e7f4; color:#7a4a99; border-color:#ddc7e8;}
+  .badge.enum{background:#eaf2e9; color:var(--green); border-color:#cfe3cd;}
+  .badge.iface{background:#fdeee4; color:#b0602a; border-color:#f2cfae;}
+  .badge.ext{background:#fbe9ea; color:var(--red); border-color:#f2c9cb;}
+  .badge.fn{background:#efeadd; color:var(--brass-deep); border-color:var(--line);}
+  .badge.typedef{background:#e6e6f0; color:#494a8a; border-color:#cfcfe6;}
+  .badge.file{background:var(--navy); color:var(--brass-light);}
+
+  .component-name{
+    font-family:'JetBrains Mono',monospace;
+    font-size:19px; font-weight:600; color:var(--navy);
+  }
+  .component-tagline{color:var(--ink-soft); font-size:14.5px; margin:2px 0 14px 0;}
+
+  .card{
+    background:#fffdf7;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 22px 6px;
+  }
+
+  .member{
+    border-top:1px dashed var(--line);
+    padding:14px 0;
+  }
+  .member:first-child{border-top:none;}
+  .sig{
+    display:block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:13.5px;
+    background:var(--navy);
+    color:#e9e2c8;
+    padding:9px 14px;
+    border-radius:var(--radius);
+    overflow-x:auto;
+    margin-bottom:9px;
+    white-space:pre;
+  }
+  .sig .kw{color:#7fb3d5;}
+  .sig .ty{color:#e4c07d;}
+  .sig .nm{color:#f4efdd; font-weight:600;}
+  .member p{margin:0 0 8px 0; color:var(--ink-soft); font-size:14.5px;}
+  .member p:last-child{margin-bottom:0;}
+  .member .label{
+    font-family:'JetBrains Mono',monospace; font-size:10px;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--brass-deep);
+    font-weight:700; margin-right:6px;
+  }
+  .note{
+    background:#fdf5e4; border:1px solid #ecd9ac; border-radius:var(--radius);
+    padding:10px 14px; font-size:13.5px; color:#6b501e; margin:8px 0;
+  }
+  .note.warn{background:#fdecec; border-color:#efc2c2; color:#7a2a22;}
+  .note.tip{background:#eaf3ec; border-color:#c6dfcb; color:#2c5636;}
+
+  hr.sep{border:none; border-top:1px solid var(--line); margin:52px 0;}
+
+  .backtop{
+    position:fixed; right:22px; bottom:22px;
+    background:var(--navy); color:var(--brass-light);
+    width:42px;height:42px;border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    text-decoration:none; font-size:18px; box-shadow:0 6px 18px rgba(0,0,0,.25);
+    opacity:.85;
+  }
+  .backtop:hover{opacity:1;}
+
+  footer{
+    max-width:var(--maxw); margin:0 auto; padding:40px 32px 80px;
+    color:#9a9376; font-size:13px; border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">
+      <span class="wheel"><svg viewBox="0 0 24 24" fill="none" stroke="#e4c07d" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6M5.6 5.6l4.2 4.2M14.2 14.2l4.2 4.2M18.4 5.6l-4.2 4.2M9.8 14.2l-4.2 4.2"/></svg></span>
+      Справочник по исходному коду
+    </span>
+    <h1>Библиотека <em>Helm</em> —<br>state management для Dart и Flutter</h1>
+    <p class="lead">Построчный разбор каждого файла, каждого класса, миксина, метода и поля: что это, зачем существует
+    и как связано с остальной системой. Документ охватывает как ядро (<code>package:helm/helm.dart</code>,
+    чистый Dart без Flutter), так и мост во Flutter (<code>package:helm/flutter.dart</code>).</p>
+    <div class="hero-meta">
+      <span><b>26</b> файлов</span>
+      <span><b>2</b> слоя: Core / Flutter Bridge</span>
+      <span><b>0</b> внешних state-менеджеров — только <code>ChangeNotifier</code>/<code>ValueListenable</code></span>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <nav class="sidebar">
+    <div class="side-group">
+      <div class="side-title">Обзор</div>
+      <ul>
+        <li><a href="#overview">Архитектура</a></li>
+      </ul>
+    </div>
+
+    <div class="side-group">
+      <div class="side-title">Core · доступ и хранение</div>
+      <ul>
+        <li><a href="#state_access">state_access.dart</a></li>
+        <li><a href="#state_storage">state_storage.dart</a></li>
+        <li><a href="#equality">equality.dart</a></li>
+      </ul>
+    </div>
+
+    <div class="side-group">
+      <div class="side-title">Core · отмена и диспатч</div>
+      <ul>
+        <li><a href="#cancel_token">cancel_token.dart</a></li>
+        <li><a href="#dispatch">dispatch.dart</a></li>
+        <li><a href="#state_command">state_command.dart</a></li>
+        <li><a href="#state_effect_command">state_effect_command.dart</a></li>
+        <li><a href="#middleware">middleware.dart</a></li>
+      </ul>
+    </div>
+
+    <div class="side-group">
+      <div class="side-title">Core · Loadable</div>
+      <ul>
+        <li><a href="#loadable">loadable.dart</a></li>
+        <li><a href="#loadable_command">loadable_command.dart</a></li>
+      </ul>
+    </div>
+
+    <div class="side-group">
+      <div class="side-title">Core · internal writers</div>
+      <ul>
+        <li><a href="#callback_list">callback_list.dart</a></li>
+        <li><a href="#guarded_writer">guarded_writer.dart</a></li>
+        <li><a href="#emitting_writer">emitting_writer.dart</a></li>
+        <li><a href="#tracking_writer">tracking_writer.dart</a></li>
+      </ul>
+    </div>
+
+    <div class="side-group">
+      <div class="side-title">Core · Store</div>
+      <ul>
+        <li><a href="#state_store">state_store.dart</a></li>
+        <li><a href="#store_builder">store_builder.dart</a></li>
+        <li><a href="#store_config">store_config.dart</a></li>
+        <li><a href="#helm_barrel">helm.dart (barrel)</a></li>
+      </ul>
+    </div>
+
+    <div class="side-group">
+      <div class="side-title">Flutter Bridge</div>
+      <ul>
+        <li><a href="#dispatch_proxy">dispatch_proxy.dart</a></li>
+        <li><a href="#binding_utils">binding_utils.dart</a></li>
+        <li><a href="#helm_controller">helm_controller.dart</a></li>
+        <li><a href="#helm_feature">helm_feature.dart</a></li>
+        <li><a href="#helm_builder">helm_builder.dart</a></li>
+        <li><a href="#helm_computed">helm_computed.dart</a></li>
+        <li><a href="#helm_loadable">helm_loadable.dart</a></li>
+        <li><a href="#helm_reactive">helm_reactive.dart</a></li>
+        <li><a href="#flutter_barrel">flutter.dart (barrel)</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="intro" id="overview">
+      <h2>Как устроена библиотека</h2>
+      <p><b>Helm</b> — это предсказуемый state-менеджер, построенный вокруг одного центрального объекта —
+      <code>StateStore&lt;S, E&gt;</code>. <code>S</code> — тип состояния, <code>E</code> — тип side-эффектов
+      (событий, которые не являются частью состояния: навигация, снекбар, разовый тост).</p>
+      <p>Библиотека физически разделена на два независимых слоя, и это разделение — центральный архитектурный
+      инвариант всего проекта:</p>
+    </section>
+
+    <div class="arch-diagram">
+      <div class="arch-box">
+        <h3>Core <span class="tag">package:helm/helm.dart</span></h3>
+        <p>Чистый Dart. Ни одного импорта <code>package:flutter</code>. Работает в CLI, на сервере, в изоляте —
+        где угодно, где есть Dart. Отвечает за диспатч команд, отмену, хранение и синхронную публикацию изменений.</p>
+        <ul>
+          <li>StateStore — центральный объект</li>
+          <li>Команды: sync / async / stream, с эффектом и без</li>
+          <li>CancelToken, DispatchResult, Loadable</li>
+          <li>Internal-writers: цепочка декораторов вокруг commit()</li>
+        </ul>
+      </div>
+      <div class="arch-box">
+        <h3>Flutter Bridge <span class="tag">package:helm/flutter.dart</span></h3>
+        <p>Зависит от Core, но не наоборот. Строится строго на нативных примитивах Flutter —
+        <code>ChangeNotifier</code>/<code>ValueListenable</code>/<code>Listenable</code> — без стороннего
+        рантайма поверх Stream.</p>
+        <ul>
+          <li>HelmFeature — глобально адресуемый ленивый токен фичи</li>
+          <li>HelmController — мост StateStore → ValueListenable</li>
+          <li>HelmBuilder/Selector/Listener/Consumer — виджеты-обёртки</li>
+          <li>feature.watch()/.select()/.effect() — hooks-подобный синтаксис</li>
+          <li>HelmComputed — производные значения из нескольких фич</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- STATE ACCESS -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="state_access">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>state_access.dart</h2>
+        <span class="file-path">lib/src/core/state_access.dart</span>
+      </div>
+      <p class="file-role">Базовые контракты доступа к состоянию — разделение прав "читать" / "писать" по
+      принципу разделения интерфейсов (ISP). Именно эти интерфейсы получают команды вместо прямого доступа к Store.</p>
+
+      <div class="component" id="IStateReader">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">IStateReader&lt;S&gt;</span></div>
+        <p class="component-tagline">Право только на чтение состояния.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">S</span> <span class="nm">get</span> current;</span>
+            <p>Синхронный геттер текущего состояния. Передаётся наблюдателям и командам, которым не нужно
+            писать — например, второй параметр <code>execute()</code> команд получает именно <code>IStateReader</code>,
+            а не полный доступ к Store.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="IStateWriter">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">IStateWriter&lt;S&gt;</span></div>
+        <p class="component-tagline">Право только на запись состояния.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">commit</span>(S nextState);</span>
+            <p>Фиксирует новое состояние. Контракт гласит, что <code>StateStore</code> эмитирует обновление
+            <b>синхронно</b>, в момент вызова — никакой буферизации через микрозадачу или Stream. Это гарантия
+            согласованности: <code>state</code> и подписчики видят одно и то же в любой момент времени.</p>
+            <p>Именно этот интерфейс оборачивается декораторами <code>GuardedWriter</code>, <code>EmittingWriter</code>,
+            <code>TrackingWriter</code> — паттерн Decorator, а не наследование, чтобы независимо комбинировать
+            "публикацию", "защиту от коммита после отмены" и "группировку по итерациям потока".</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="IStateAccessor">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">IStateAccessor&lt;S&gt;</span></div>
+        <p class="component-tagline">Полный доступ — объединение <code>IStateReader</code> и <code>IStateWriter</code>.</p>
+      </div>
+
+      <div class="component" id="StateAccessor">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">StateAccessor&lt;S&gt;</span> <span class="badge iface">implements IStateAccessor</span></div>
+        <p class="component-tagline">Тонкий адаптер <code>IStateAccessor</code> → <code>IStateStorage</code>, без бизнес-логики.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">const</span> <span class="nm">StateAccessor</span>(IStateStorage&lt;S&gt; storage);</span>
+            <p>Оборачивает конкретное хранилище (по умолчанию <code>StateMemoryStorage</code>) и просто
+            делегирует <code>current</code> → <code>storage.read()</code>, <code>commit</code> →
+            <code>storage.write()</code>. Единственный "мост" между абстрактным контрактом доступа и
+            физическим хранением значения.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- STATE STORAGE -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="state_storage">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>state_storage.dart</h2>
+        <span class="file-path">lib/src/core/state_storage.dart</span>
+      </div>
+      <p class="file-role">Контракт синхронного физического хранилища состояния — точка расширения (Dependency
+      Inversion), но <b>не</b> предназначена для персистентных асинхронных хранилищ напрямую.</p>
+
+      <div class="component" id="IStateStorage">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">IStateStorage&lt;S&gt;</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">S</span> <span class="nm">read</span>();
+<span class="kw">void</span> <span class="nm">write</span>(S state);</span>
+            <p>Намеренно примитивный контракт: только синхронное чтение/запись. Персистентные асинхронные
+            хранилища (SharedPreferences, sqflite, Hive) <b>не реализуют его напрямую</b> — правильный паттерн:
+            прочитать начальное значение асинхронно ДО создания <code>StateStore</code>, а запись на диск
+            выполнять как побочный эффект в <code>onChanged</code>/внутри самой команды. Store — рантайм-состояние
+            в памяти с быстрым синхронным доступом, а не ORM.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="StateMemoryStorage">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">StateMemoryStorage&lt;S&gt;</span> <span class="badge iface">implements IStateStorage</span></div>
+        <p class="component-tagline">Реализация по умолчанию — хранение состояния прямо в поле объекта.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="nm">StateMemoryStorage</span>(this._state);</span>
+            <p>Одно приватное мутируемое поле <code>S _state</code>. <code>read()</code> возвращает его,
+            <code>write()</code> перезаписывает. Используется, если конструктору <code>StateStore</code> не
+            передан кастомный <code>storage</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- EQUALITY -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="equality">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>equality.dart</h2>
+        <span class="file-path">lib/src/core/equality.dart</span>
+      </div>
+      <p class="file-role">Готовые компараторы "состояние не изменилось" — нужны, когда <code>S</code>
+      (или срез, выбранный <code>selector</code>) не имеет содержательного <code>==</code>, например обычный
+      мутируемый <code>List</code>/<code>Set</code>/<code>Map</code>. Тонкая обёртка над
+      <code>package:collection</code>.</p>
+
+      <div class="component" id="defaultEquals">
+        <div class="component-head"><span class="badge fn">function</span><span class="component-name">defaultEquals&lt;T&gt;(T a, T b)</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">bool</span> <span class="nm">defaultEquals</span>&lt;T&gt;(T a, T b) =&gt; a == b;</span>
+            <p>Компаратор по умолчанию — обычное структурное <code>==</code>. Оформлен как top-level
+            generic-функция (tear-off), а не как фабрика "функция → замыкание", чтобы <code>defaultEquals&lt;T&gt;</code>
+            переиспользовалась без аллокации нового замыкания на каждый вызов конструктора
+            <code>StateStore</code>/<code>EmittingWriter</code>/<code>HelmComputed</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="_FunctionEquality">
+        <div class="component-head"><span class="badge class">class · internal</span><span class="component-name">_FunctionEquality&lt;T&gt;</span> <span class="badge iface">implements Equality&lt;T&gt;</span></div>
+        <p class="component-tagline">Адаптер обычной функции-компаратора к <code>Equality&lt;T&gt;</code> из <code>package:collection</code>.</p>
+        <div class="card">
+          <div class="member">
+            <span class="label">equals</span>
+            <p>Делегирует переданной функции <code>_equals</code>.</p>
+          </div>
+          <div class="member">
+            <span class="label">hash</span>
+            <p>Всегда делегирует в <code>Object.hashCode</code> элемента, <b>а не</b> в переданный компаратор —
+            он не участвует в сравнении коллекций (<code>listEquals</code>/<code>mapEquals</code> вызывают
+            <code>Equality.equals</code> напрямую, не хешируя коллекцию целиком). Построить корректный хэш для
+            двух объектов, равных по кастомному <code>_equals</code>, но не по <code>==</code>, в общем случае
+            невозможно без отдельной хэш-функции от пользователя.</p>
+          </div>
+          <div class="member">
+            <span class="label">isValidKey</span>
+            <p>Всегда <code>true</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="listEquals">
+        <div class="component-head"><span class="badge fn">function</span><span class="component-name">listEquals&lt;T&gt;(List&lt;T&gt;? a, List&lt;T&gt;? b, {elementEquals})</span></div>
+        <div class="card">
+          <div class="member">
+            <p>Поэлементное сравнение двух списков без промежуточных <code>Set</code>/<code>Map</code>.
+            Без такого компаратора Store/<code>HelmComputed</code>/<code>HelmSelector</code> считали бы новый
+            список с теми же элементами "другим состоянием" при каждом коммите — лишние публикации и ребилды,
+            потому что обычный <code>List</code> не переопределяет <code>==</code> содержательно.</p>
+            <p><span class="label">Быстрый путь</span> сперва проверяется <code>identical(a, b)</code>, затем
+            null-safety, а сама реализация — <code>ListEquality</code> из <code>package:collection</code>
+            (пакет уже транзитивно тянется большинством Flutter-проектов, поэтому не добавляет нового следа
+            в дереве зависимостей).</p>
+            <p><span class="label">elementEquals</span> — компаратор элементов, по умолчанию <code>defaultEquals</code>.
+            Порядок важен: <code>[1,2] != [2,1]</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="setEquals">
+        <div class="component-head"><span class="badge fn">function</span><span class="component-name">setEquals&lt;T&gt;(Set&lt;T&gt;? a, Set&lt;T&gt;? b)</span></div>
+        <div class="card">
+          <div class="member">
+            <p>Сравнение множеств по содержимому, без учёта порядка вставки — обёртка над
+            <code>SetEquality</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="mapEquals">
+        <div class="component-head"><span class="badge fn">function</span><span class="component-name">mapEquals&lt;K, V&gt;(Map&lt;K, V&gt;? a, Map&lt;K, V&gt;? b, {valueEquals})</span></div>
+        <div class="card">
+          <div class="member">
+            <p>Сравнение по ключам и значениям, без учёта порядка вставки. <code>valueEquals</code> —
+            компаратор значений (по умолчанию <code>==</code>). Ключи <b>всегда</b> сравниваются через
+            <code>==</code>/<code>hashCode</code> — <code>MapEquality</code> по умолчанию использует
+            <code>DefaultEquality</code> для ключей, кастомизируется только сравнение значений.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="deepEquals">
+        <div class="component-head"><span class="badge fn">function</span><span class="component-name">deepEquals(Object? a, Object? b)</span></div>
+        <div class="card">
+          <div class="member">
+            <p>Рекурсивное сравнение "как есть" для значений с произвольной вложенностью
+            <code>List</code>/<code>Set</code>/<code>Map</code>/<code>Iterable</code> (например, состояние,
+            собранное из JSON). Делегирует в <code>DeepCollectionEquality</code>.</p>
+            <div class="note">Не заменяет предметно-специфичный <code>equals</code> в общем случае: если у <code>S</code>
+            есть содержательный <code>==</code> (data-класс, <code>@immutable</code>), он почти всегда быстрее
+            и точнее. <code>deepEquals</code> пригождается, когда содержательного <code>==</code> нет и заводить
+            его ради одного сравнения избыточно.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- CANCEL TOKEN -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="cancel_token">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>cancel_token.dart</h2>
+        <span class="file-path">lib/src/core/cancel_token.dart</span>
+      </div>
+      <p class="file-role">Одноразовый токен отмены асинхронных/потоковых команд — центральный механизм защиты
+      от гонок (race conditions), когда результат устаревшего запроса приходит после того, как его вытеснил новый.</p>
+
+      <div class="component" id="CancelReason">
+        <div class="component-head"><span class="badge enum">enum</span><span class="component-name">CancelReason</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="label">superseded</span>
+            <p>Команда с тем же <code>DispatchKeyed.dispatchKey</code> запущена повторно — предыдущий вызов вытеснен.</p>
+          </div>
+          <div class="member">
+            <span class="label">userRequested</span>
+            <p>Явный вызов <code>StateStore.cancel</code>/<code>cancelAll</code>.</p>
+          </div>
+          <div class="member">
+            <span class="label">storeClosed</span>
+            <p>Store закрыт через <code>StateStore.close</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="CancelToken">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">CancelToken</span></div>
+        <p class="component-tagline">Проверяется командой после каждого <code>await</code>, перед каждым <code>commit</code>.</p>
+        <div class="card">
+          <div class="member">
+            <span class="label">поле</span>
+            <span class="sig">CancelReason? _reason;</span>
+            <p>Отсутствие причины = токен активен. <code>isCancelled</code> и <code>reason</code> — публичные
+            геттеры поверх этого поля.</p>
+          </div>
+          <div class="member">
+            <span class="label">поле</span>
+            <span class="sig">CallbackList&lt;void Function()&gt;? _onCancelListeners;</span>
+            <p>Список колбэков <code>whenCancelled</code>, создаётся <b>лениво</b> — подавляющее большинство
+            токенов не имеет подписчиков на отмену, заводить под них список заранее незачем.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">cancel</span>([CancelReason reason = userRequested])</span>
+            <p>Отменяет токен. Повторный вызов — no-op: причина <b>не перезаписывается</b> (первая причина
+            отмены — окончательная). После установки <code>_reason</code> список колбэков вынимается из поля
+            (<code>_onCancelListeners = null</code>) и вызывается через <code>CallbackList.notify</code> с
+            изоляцией ошибок: упавший колбэк логируется debug-only через <code>assert</code>, но не мешает
+            остальным <code>whenCancelled</code>-колбэкам и никогда не бросает исключение наружу.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">whenCancelled</span>(void Function() callback)</span>
+            <p>Регистрирует колбэк, вызываемый ровно один раз в момент отмены — удобно, чтобы освободить внешний
+            ресурс (сокет, таймер, подписку) без поллинга <code>isCancelled</code>. Если токен уже отменён —
+            вызывается <b>немедленно и синхронно</b>. Можно регистрировать сколько угодно независимых колбэков —
+            каждый вызывается ровно один раз, в порядке регистрации; падение одного не мешает остальным.</p>
+          </div>
+        </div>
+        <div class="note tip"><b>Двойная защита от гонок:</b> команда сама должна проверять
+        <code>isCancelled</code> перед коммитом, но Store дополнительно подстраховывает через
+        <code>GuardedWriter</code> — коммит после отмены молча игнорируется, даже если команда забыла проверить токен.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- DISPATCH -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="dispatch">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>dispatch.dart</h2>
+        <span class="file-path">lib/src/core/dispatch.dart</span>
+      </div>
+      <p class="file-role">Типы, описывающие исходы и метаданные диспатча: как классифицировать команду, что
+      прилетает в лог/middleware, и sealed-иерархия результата.</p>
+
+      <div class="component" id="DispatchKind">
+        <div class="component-head"><span class="badge enum">enum</span><span class="component-name">DispatchKind</span></div>
+        <div class="card">
+          <div class="member"><p><code>{ sync, async, stream }</code> — тип диспатча, для фильтрации/группировки в middleware и логах.</p></div>
+        </div>
+      </div>
+
+      <div class="component" id="DispatchKeyed">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">DispatchKeyed</span></div>
+        <p class="component-tagline">Опциональный контракт: свой ключ группировки dispatch/cancel вместо значения по умолчанию (<code>command.runtimeType</code>).</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">Object <span class="nm">get</span> dispatchKey;</span>
+            <p>В Dart дженерики реифицированы: <code>runtimeType</code> уже учитывает типовые параметры
+            (<code>FetchCommand&lt;User&gt;</code> и <code>FetchCommand&lt;Todo&gt;</code> — разные <code>Type</code>),
+            коллизий между инстанциациями одного generic-класса нет. <code>DispatchKeyed</code> решает другую
+            задачу: когда <b>одна и та же</b> инстанциация команды должна поддерживать несколько параллельных,
+            не вытесняющих друг друга запусков — например, загрузка разных <code>userId</code> одним и тем же
+            классом команды.</p>
+            <div class="note warn">Ключ участвует в <code>Map</code>-поиске через <code>==</code>/<code>hashCode</code> —
+            используй значения с содержательным равенством (<code>Record</code>, <code>String</code>, <code>int</code>,
+            enum). Свежесозданный <code>Object()</code> без переопределённого <code>==</code> равен только
+            самому себе и превращает <code>DispatchKeyed</code> в бесполезную группировку "сам с собой".</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="DispatchLabeled">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">DispatchLabeled</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">String <span class="nm">get</span> dispatchLabel;</span>
+            <p>Опциональное явное имя команды для логов/DevTools вместо <code>runtimeType.toString()</code>,
+            которое в release-сборке минифицируется obfuscator'ом до бессмысленных <code>a</code>/<code>b</code>/<code>c</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="DispatchEvent">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">DispatchEvent&lt;S&gt;</span></div>
+        <p class="component-tagline">Снапшот исхода диспатча — эмитируется в <code>addDispatchListener</code> при любом исходе: успех, ошибка, отмена.</p>
+        <div class="card">
+          <div class="member"><span class="label">commandLabel</span><p>Имя команды — см. <code>DispatchLabeled</code>.</p></div>
+          <div class="member"><span class="label">before / after</span><p>Состояние до и после выполнения. При ошибке/отмене без коммита <code>after == before</code>.</p></div>
+          <div class="member"><span class="label">kind</span><p>sync/async/stream.</p></div>
+          <div class="member"><span class="label">error</span><p>Исключение, если команда завершилась с ошибкой.</p></div>
+          <div class="member"><span class="label">elapsed</span><p>Время выполнения. <code>null</code> для sync-команд (мгновенны) и когда никто не подписан на <code>addDispatchListener</code> — замер не делается впустую (см. <code>Stopwatch</code> в <code>_runAsync</code>).</p></div>
+          <div class="member"><span class="label">cancelReason</span><p>Причина отмены, если команда была отменена.</p></div>
+          <div class="member">
+            <span class="sig">bool <span class="nm">get</span> isSuccess =&gt; error == null &amp;&amp; cancelReason == null;
+bool <span class="nm">get</span> isCancelled =&gt; cancelReason != null;</span>
+          </div>
+          <div class="member">
+            <span class="sig">String <span class="nm">toLogString</span>({bool useEmoji = true})</span>
+            <p>Компактная строка для логов вида <code>✓ [async] FetchUserCommand (120ms)</code>.
+            <code>useEmoji: false</code> переключает на ASCII-маркеры (<code>[OK]</code>/<code>[FAIL]</code>/
+            <code>(cancelled)</code>) для терминалов/парсеров без юникода.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="DispatchResult">
+        <div class="component-head"><span class="badge class">sealed class</span><span class="component-name">DispatchResult&lt;S&gt;</span></div>
+        <p class="component-tagline">Результат <code>dispatch</code>/<code>dispatchWithEffect</code>. Sealed-иерархия — исчерпывающий <code>switch</code> без риска пропустить исход.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">final class</span> <span class="ty">DispatchSuccess</span>&lt;S&gt; extends DispatchResult&lt;S&gt; { <span class="kw">final</span> S state; }</span>
+            <p>Команда выполнена успешно; <code>state</code> — состояние Store после выполнения.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">final class</span> <span class="ty">DispatchFailure</span>&lt;S&gt; extends DispatchResult&lt;S&gt; { <span class="kw">final</span> Object error; <span class="kw">final</span> StackTrace stackTrace; }</span>
+            <p>Команда завершилась необработанным исключением. Состояние могло измениться: любой
+            <code>commit</code>, сделанный до исключения, уже применён и опубликован.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">final class</span> <span class="ty">DispatchCancelled</span>&lt;S&gt; extends DispatchResult&lt;S&gt; { <span class="kw">final</span> CancelReason reason; }</span>
+            <p>Команда отменена до завершения. Состояние могло измениться: коммиты <i>до</i> отмены уже
+            применены — Store лишь гарантирует, что коммиты <i>после</i> отмены игнорируются.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- STATE COMMAND -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="state_command">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>state_command.dart</h2>
+        <span class="file-path">lib/src/core/state_command.dart</span>
+      </div>
+      <p class="file-role">Контракты команд без side-эффекта (три вида: sync/async/stream) плюс набор готовых
+      "коробочных" команд для типовых сценариев, чтобы не писать отдельный класс на каждую тривиальную мутацию.</p>
+
+      <div class="component" id="ISyncCommand">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">ISyncCommand&lt;S&gt;</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">S <span class="nm">execute</span>(S current);</span>
+            <p>Мгновенная синхронная мутация без IO и side-эффектов. Должна быть чистой функцией.
+            Гарантированно выполняется атомарно: без <code>await</code>, без токена отмены.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="IAsyncCommand">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">IAsyncCommand&lt;S&gt;</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">Future&lt;void&gt; <span class="nm">execute</span>(IStateReader&lt;S&gt; reader, IStateWriter&lt;S&gt; writer, CancelToken cancel);</span>
+            <p>Единичное асинхронное действие без side-эффекта. Обязана проверять <code>cancel.isCancelled</code>
+            перед каждым <code>commit</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="IStreamCommand">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">IStreamCommand&lt;S&gt;</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">Stream&lt;void&gt; <span class="nm">execute</span>(IStateReader&lt;S&gt; reader, IStateWriter&lt;S&gt; writer);</span>
+            <p>Подписка на внешний <code>Stream</code>, коммитящая каждое входящее значение. Store управляет
+            жизненным циклом подписки: отписывается при <code>close</code> или при повторном
+            <code>dispatchStream</code> с той же группой отмены (<code>DispatchKeyed</code>).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="SetStateCommand">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">SetStateCommand&lt;S&gt;</span> <span class="badge iface">implements ISyncCommand</span></div>
+        <div class="card"><div class="member">
+          <p>Заменяет состояние на заранее известное значение <code>next</code> — без отдельного класса команды
+          на каждую тривиальную мутацию: <code>store.dispatchSync(SetStateCommand(FilterZone.all))</code>.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="UpdateStateCommand">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">UpdateStateCommand&lt;S&gt;</span> <span class="badge iface">implements ISyncCommand</span></div>
+        <div class="card"><div class="member">
+          <p>Вычисляет новое состояние из текущего чистой функцией <code>update(S current)</code> — типовой
+          <code>copyWith</code>-подобный апдейт без отдельного класса.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="SetStateWithEffectCommand">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">SetStateWithEffectCommand&lt;S, E&gt;</span> <span class="badge iface">implements ISyncSideEffect</span></div>
+        <div class="card"><div class="member"><p>Как <code>SetStateCommand</code>, но дополнительно эмитирует фиксированный <code>effect</code>.</p></div></div>
+      </div>
+
+      <div class="component" id="UpdateStateWithEffectCommand">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">UpdateStateWithEffectCommand&lt;S, E&gt;</span> <span class="badge iface">implements ISyncSideEffect</span></div>
+        <div class="card"><div class="member"><p>Как <code>UpdateStateCommand</code>, но функция <code>update</code> сразу возвращает пару (состояние, эффект) — для случаев, когда эффект зависит от результата вычисления.</p></div></div>
+      </div>
+
+      <div class="component" id="LoadStateCommand">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">LoadStateCommand&lt;S&gt;</span> <span class="badge iface">implements IAsyncCommand</span></div>
+        <div class="card"><div class="member">
+          <span class="sig"><span class="nm">execute</span>(reader, writer, cancel) <span class="kw">async</span> {
+  <span class="kw">final</span> next = <span class="kw">await</span> load();
+  <span class="kw">if</span> (cancel.isCancelled) <span class="kw">return</span>;
+  writer.commit(next);
+}</span>
+          <p>Загружает состояние целиком через переданную функцию <code>load</code> и коммитит результат
+          целиком. Проверяет отмену после <code>await</code>, перед коммитом — эталонный пример правильного
+          использования <code>CancelToken</code>.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="EmitEffectCommand">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">EmitEffectCommand&lt;S, E&gt;</span> <span class="badge iface">implements ISyncSideEffect</span></div>
+        <div class="card"><div class="member">
+          <p>Эмитирует side-эффект, <b>не трогая состояние</b> (возвращает <code>(current, effect)</code>) — навигация, диалог, аналитическое событие без изменения данных.</p>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- STATE EFFECT COMMAND -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="state_effect_command">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>state_effect_command.dart</h2>
+        <span class="file-path">lib/src/core/state_effect_command.dart</span>
+      </div>
+      <p class="file-role">Те же три вида команд (sync/async/stream), но каждая дополнительно возвращает
+      side-эффект <code>E</code> — событие, не являющееся частью состояния.</p>
+
+      <div class="component" id="SyncSideEffectResult">
+        <div class="component-head"><span class="badge typedef">typedef</span><span class="component-name">SyncSideEffectResult&lt;S, E&gt;</span></div>
+        <div class="card"><div class="member">
+          <span class="sig"><span class="kw">typedef</span> SyncSideEffectResult&lt;S, E&gt; = (S next, E? effect);</span>
+          <p>Record-тип: атомарный результат sync-команды с эффектом. <code>effect == null</code> означает
+          "эффект не эмитируется в этом выполнении".</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="ISyncSideEffect">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">ISyncSideEffect&lt;S, E&gt;</span></div>
+        <div class="card"><div class="member">
+          <span class="sig">SyncSideEffectResult&lt;S, E&gt; <span class="nm">execute</span>(S current);</span>
+          <p>Синхронная команда с атомарным возвратом нового состояния и опционального эффекта. Должна быть чистой функцией.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="IAsyncSideEffect">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">IAsyncSideEffect&lt;S, E&gt;</span></div>
+        <div class="card"><div class="member">
+          <span class="sig">Future&lt;E?&gt; <span class="nm">execute</span>(IStateReader&lt;S&gt;, IStateWriter&lt;S&gt;, CancelToken);</span>
+          <p>Единичное асинхронное действие, возвращающее опциональный side-эффект (например, <code>NavigateToHome</code>
+          при успешном логине). Как и любая async-команда — проверяет <code>isCancelled</code> перед каждым коммитом.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="IStreamSideEffect">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">IStreamSideEffect&lt;S, E&gt;</span></div>
+        <div class="card"><div class="member">
+          <span class="sig">Stream&lt;E?&gt; <span class="nm">execute</span>(IStateReader&lt;S&gt;, IStateWriter&lt;S&gt;);</span>
+          <p>Stream-команда, каждая итерация которой может обновить состояние и/или эмитировать side-эффект;
+          <code>null</code> из итерации — эффекта в этот раз нет.</p>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- MIDDLEWARE -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="middleware">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>middleware.dart</h2>
+        <span class="file-path">lib/src/core/middleware.dart</span>
+      </div>
+      <p class="file-role">Именованная, переиспользуемая альтернатива анонимному колбэку в <code>addDispatchListener</code>.</p>
+
+      <div class="component" id="StoreMiddleware">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">StoreMiddleware&lt;S&gt;</span></div>
+        <div class="card"><div class="member">
+          <span class="sig"><span class="kw">void</span> <span class="nm">onDispatch</span>(DispatchEvent&lt;S&gt; event);</span>
+          <p>Вызывается после <b>каждого</b> диспатча — при успехе, ошибке и отмене, одинаково для
+          sync/async/stream команд. Технически <code>StoreMiddleware</code> ничего не добавляет к возможностям
+          Store сверх <code>addDispatchListener</code> — <code>DispatchEvent</code> уже несёт всё нужное для
+          наблюдения "после факта". Ценность в форме: у объекта есть имя типа, жизненный цикл (можно хранить
+          список активных middleware в DI-контейнере, включать/выключать по фиче-флагу), проще тестировать в
+          изоляции, чем безымянное замыкание.</p>
+          <div class="note">Helm намеренно <b>не даёт</b> middleware перехватывать/подменять команду или её
+          результат <i>до</i> выполнения — это сломало бы гарантию "любой коммит публикуется синхронно и без
+          исключений на пути между командой и подписчиками состояния".</div>
+          <p><code>onDispatch</code> не должен бросать исключения: изоляция ошибок между слушателями защищает
+          доставку остальным, но упавший middleware всё равно не выполнит свою работу для текущего события —
+          рискованные операции (сетевой вызов аналитики) стоит оборачивать в собственный try/catch.</p>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- LOADABLE -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="loadable">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>loadable.dart</h2>
+        <span class="file-path">lib/src/core/loadable.dart</span>
+      </div>
+      <p class="file-role">Готовое состояние одного асинхронного ресурса — аналог <code>AsyncValue&lt;T&gt;</code>
+      (Riverpod) / <code>AsyncSnapshot&lt;T&gt;</code> (Flutter), без зависимости на них. Можно использовать
+      как весь <code>S</code> Store'а либо как поле внутри более сложного состояния.</p>
+
+      <div class="component" id="Loadable">
+        <div class="component-head"><span class="badge class">sealed class</span><span class="component-name">Loadable&lt;T&gt;</span></div>
+        <p class="component-tagline">Четыре состояния ресурса: не запрашивался / грузится / загружен / упал с ошибкой.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">const factory</span> Loadable.idle() = LoadableIdle&lt;T&gt;;
+<span class="kw">const factory</span> Loadable.loading([T? previous]) = LoadableLoading&lt;T&gt;;
+<span class="kw">const factory</span> Loadable.data(T value) = LoadableData&lt;T&gt;;
+<span class="kw">const factory</span> Loadable.error(Object error, [StackTrace? st, T? previous]) = LoadableError&lt;T&gt;;</span>
+            <p>Четыре фабричных конструктора. <code>previous</code> у <code>loading</code>/<code>error</code> —
+            последнее успешно загруженное значение: позволяет показать старые данные поверх спиннера
+            (pull-to-refresh не обнуляет экран).</p>
+          </div>
+          <div class="member">
+            <span class="sig">bool <span class="nm">get</span> isLoading =&gt; this is LoadableLoading&lt;T&gt;;
+bool <span class="nm">get</span> isError =&gt; this is LoadableError&lt;T&gt;;</span>
+          </div>
+          <div class="member">
+            <span class="sig">T? <span class="nm">get</span> valueOrNull</span>
+            <p>Последнее известное значение — из <code>data</code> либо "протянутое" <code>previous</code> у
+            <code>loading</code>/<code>error</code>. <code>null</code>, если значения не было ни разу
+            (<code>idle</code>).</p>
+          </div>
+          <div class="member">
+            <span class="sig">Object? <span class="nm">get</span> errorOrNull</span>
+          </div>
+          <div class="member">
+            <span class="sig">R <span class="nm">when</span>&lt;R&gt;({idle, loading, data, error})</span>
+            <p>Исчерпывающее ветвление через внутренний <code>switch</code> по подтипам — единственный
+            официальный способ гарантированно разобрать все четыре случая.</p>
+          </div>
+          <div class="member">
+            <span class="sig">R <span class="nm">maybeWhen</span>&lt;R&gt;({idle?, loading?, data?, error?, required orElse})</span>
+            <p>Как <code>when</code>, но с обработкой только нужных веток — реализовано как вызов <code>when</code>
+            с недостающими ветками, подставленными как <code>orElse</code>-обёртки (тонкий слой поверх <code>when</code>,
+            без дублирования логики switch).</p>
+          </div>
+          <div class="member">
+            <span class="sig">R <span class="nm">map</span>&lt;R&gt;({idle, loading, data, error})</span>
+            <p>Паттерн-матчинг по конкретным подклассам (<code>LoadableIdle&lt;T&gt;</code> и т.д.), а не по
+            деструктурированным полям — удобен, когда нужны сразу несколько полей конкретного варианта.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="LoadableSubtypes">
+        <div class="component-head"><span class="badge class">final class × 4</span><span class="component-name">LoadableIdle / LoadableLoading / LoadableData / LoadableError</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="label">LoadableIdle&lt;T&gt;</span>
+            <p><code>==</code> сравнивает только тип (<code>other is LoadableIdle&lt;T&gt;</code>) — у него нет полей.</p>
+          </div>
+          <div class="member">
+            <span class="label">LoadableLoading&lt;T&gt;</span>
+            <p>Поле <code>previous</code>; <code>==</code>/<code>hashCode</code> сравнивают его.</p>
+          </div>
+          <div class="member">
+            <span class="label">LoadableData&lt;T&gt;</span>
+            <p>Поле <code>value</code>; <code>==</code>/<code>hashCode</code> сравнивают его.</p>
+          </div>
+          <div class="member">
+            <span class="label">LoadableError&lt;T&gt;</span>
+            <p>Поля <code>error</code>, <code>stackTrace</code>, <code>previous</code>. <code>StackTrace</code>
+            не переопределяет <code>==</code> содержательно (сравнение по идентичности) — это заодно отличает
+            повторный тот же коммит (тот же инстанс <code>StackTrace</code>) от двух разных бросков одной и той
+            же ошибки.</p>
+          </div>
+        </div>
+        <div class="note warn"><b>Мутируемые коллекции внутри T:</b> если <code>T</code> — <code>List</code>/<code>Set</code>/<code>Map</code>
+        без содержательного <code>==</code>, Store/<code>HelmSelector</code> увидят новый список с теми же
+        элементами как "другое" состояние на каждый коммит. Передай в <code>StateStore</code>/<code>HelmComputed</code>
+        компаратор <code>equals</code>, построенный поверх <code>listEquals</code>/<code>setEquals</code>/<code>mapEquals</code>/<code>deepEquals</code>.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- LOADABLE COMMAND -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="loadable_command">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>loadable_command.dart</h2>
+        <span class="file-path">lib/src/core/loadable_command.dart</span>
+      </div>
+      <p class="file-role">Готовые команды, ведущие <code>Loadable&lt;T&gt;</code> по циклу
+      <code>loading → data / error</code>, чтобы не писать этот try/catch вручную в каждом проекте.</p>
+
+      <div class="component" id="_runLoadable">
+        <div class="component-head"><span class="badge fn">function · internal</span><span class="component-name">_runLoadable&lt;T&gt;({reader, writer, cancel, load, onData, onError})</span></div>
+        <div class="card"><div class="member">
+          <p>Общее ядро для <code>LoadCommand</code> и <code>LoadWithEffectCommand</code> — обе команды делают
+          ровно один и тот же цикл запроса к <code>load</code>, отличаясь только тем, что происходит с
+          результатом (проброс исключения дальше vs. превращение в side-эффект). Раньше это был один и тот же
+          try/catch, дословно продублированный в двух классах.</p>
+          <p>Алгоритм: коммитит <code>Loadable.loading(previous)</code>, вызывает <code>await load()</code>;
+          если после ожидания токен отменён — выходит без коммита; при успехе коммитит <code>Loadable.data</code>
+          и зовёт <code>onData</code>; при исключении (и если не отменено) коммитит <code>Loadable.error</code>
+          и зовёт <code>onError</code>. <code>onData</code>/<code>onError</code> вызываются уже <b>после</b>
+          соответствующего коммита — им остаётся только решить, что делать с результатом на уровне конкретной команды.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="LoadCommand">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">LoadCommand&lt;T&gt;</span> <span class="badge iface">implements IAsyncCommand&lt;Loadable&lt;T&gt;&gt;</span></div>
+        <div class="card"><div class="member">
+          <span class="sig">LoadCommand(<span class="ty">Future&lt;T&gt; Function()</span> load);</span>
+          <p>Запускает загрузку и проводит <code>Loadable</code> через <code>loading → data / error</code>.
+          Исключение из <code>load</code> перебрасывается дальше <b>после</b> обновления состояния на
+          <code>Loadable.error</code> (через <code>Error.throwWithStackTrace</code>, сохраняя оригинальный
+          stack trace) — <code>onError</code>/<code>DispatchFailure</code> продолжают работать как для любой
+          другой async-команды.</p>
+          <p><code>store.dispatch(LoadCommand(() =&gt; api.fetchTodos()))</code></p>
+        </div></div>
+      </div>
+
+      <div class="component" id="LoadWithEffectCommand">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">LoadWithEffectCommand&lt;T, E&gt;</span> <span class="badge iface">implements IAsyncSideEffect</span></div>
+        <div class="card"><div class="member">
+          <span class="sig">LoadWithEffectCommand(load, {onSuccess, onError});</span>
+          <p>Как <code>LoadCommand</code>, но ошибка превращается в side-эффект (например, показ SnackBar)
+          вместо переброса исключения. <code>onSuccess</code>/<code>onError</code> — опциональные функции
+          <code>T Function(value) → E?</code> и <code>(Object, StackTrace) → E?</code>, конвертирующие результат
+          в эффект.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="WatchCommand">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">WatchCommand&lt;T&gt;</span> <span class="badge iface">implements IStreamCommand&lt;Loadable&lt;T&gt;&gt;</span></div>
+        <div class="card"><div class="member">
+          <span class="sig">WatchCommand(<span class="ty">Stream&lt;T&gt; Function()</span> source);</span>
+          <p>Подписывается на внешний <code>Stream&lt;T&gt;</code> и отражает его в <code>Loadable</code>:
+          каждое значение — <code>Loadable.data</code>, ошибка потока — <code>Loadable.error</code>
+          (подписка НЕ завершается, поток продолжает слушаться — самовосстанавливающееся соединение).</p>
+          <p><code>source</code> строит <code>Stream</code> заново при каждой подписке (а не готовый Stream),
+          чтобы повторный <code>dispatchStream</code> пересоздавал подписку с нуля.</p>
+          <p>В отличие от <code>LoadCommand</code>, <code>loading</code> коммитится только при первой подписке
+          без данных (<code>reader.current is! LoadableData&lt;T&gt;</code>) — поток шлёт значения часто, и
+          мигать в <code>loading</code> перед каждым было бы UI-шумом.</p>
+          <p>Если фабрика <code>source</code> бросает исключение синхронно (например, невалидные параметры
+          URL при построении WebSocket) — оно перехватывается: состояние переходит в <code>Loadable.error</code>,
+          а наружу возвращается <code>Stream.error(...)</code>, который <code>StateStore</code> обработает
+          обычным путём вместо необработанного исключения из <code>dispatchStream</code>.</p>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- CALLBACK LIST -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="callback_list">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>callback_list.dart</h2>
+        <span class="file-path">lib/src/core/internal/callback_list.dart</span>
+      </div>
+      <p class="file-role">Внутренний список колбэков с безопасной реентрантной итерацией <b>без копирования на
+      каждый вызов</b> — алгоритм соответствует <code>ChangeNotifier</code> из самого Flutter SDK, адаптированному
+      под generic <code>T</code> вместо <code>VoidCallback</code>. Хранит подписчиков всех четырёх каналов Store
+      (changes/effects/dispatches/errors) и <code>CancelToken.whenCancelled</code>.</p>
+
+      <div class="component" id="CallbackList">
+        <div class="component-head"><span class="badge class">final class</span><span class="component-name">CallbackList&lt;T&gt;</span></div>
+
+        <div class="card">
+          <div class="member">
+            <span class="label">почему не growable List&lt;T&gt;</span>
+            <p>Слушатели хранятся не как обычный растущий <code>List&lt;T&gt;</code>, а вручную —
+            fixed-length <code>List&lt;T?&gt;</code> + отдельный счётчик <code>_count</code>. Тот же приём,
+            что и в <code>ChangeNotifier</code> Flutter SDK: это горячий путь (вызывается на каждый
+            commit/notifyListeners), и накладные расходы growable-обёртки поверх fixed-length массива на нём заметны.</p>
+          </div>
+          <div class="member">
+            <span class="label">компактизация с гистерезисом</span>
+            <p>Если живых элементов ≤ половины текущей ёмкости массива — выделяется новый массив точного
+            размера (иначе список рос бы бесконечно после разового всплеска подписчиков и никогда не сжимался
+            обратно). Иначе — компактизация НА МЕСТЕ через попарные свопы, без единой аллокации.</p>
+          </div>
+          <div class="member">
+            <span class="label">реентрантность</span>
+            <p><code>add</code>/<code>remove</code>/<code>clear</code> безопасны для вызова изнутри
+            <code>notify</code> — типичный сценарий, когда слушатель сам меняет состав подписчиков (например,
+            реагирует на событие закрытием всего источника публикаций). Во время активной итерации удаления не
+            сдвигают массив физически (это сломало бы индексы цикла), а помечают слот <code>null</code>
+            (tombstone); реальная уборка происходит в конце самого внешнего <code>notify</code>.</p>
+          </div>
+          <div class="member">
+            <span class="label">изоляция ошибок — параметр onError</span>
+            <p>По умолчанию исключение из слушателя внутри <code>notify</code> <b>не перехватывается</b> —
+            прерывает текущий проход и летит вызывающему коду (тот же контракт, что и раньше). Это осознанное
+            поведение по умолчанию: молчаливое поглощение чужого исключения без адресата — подмена семантики,
+            а не перформанс-оптимизация. Если передан <code>onError</code>, <code>notify</code> переключается в
+            изолированный режим: исключение из одного слушателя перехватывается, передаётся в <code>onError</code>,
+            а проход продолжается для остальных. Так Store защищает свои каналы — один "плохой" слушатель
+            (например, упавший аналитический хук) не блокирует доставку события остальным.</p>
+          </div>
+
+          <div class="member">
+            <span class="sig">List&lt;T?&gt; _list;      <span class="kw">// fixed-length backing store</span>
+<span class="ty">int</span> _count;         <span class="kw">// занятые слоты, включая tombstone</span>
+<span class="ty">int</span> _notificationCallStackDepth; <span class="kw">// глубина вложенности notify</span>
+<span class="ty">int</span> _reentrantlyRemoved;  <span class="kw">// tombstone-слоты, ждущие компактизации</span></span>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">int</span> <span class="nm">get</span> length =&gt; _count - _reentrantlyRemoved;
+<span class="kw">bool</span> <span class="nm">get</span> isEmpty =&gt; length == 0;</span>
+            <p>Текущее число живых слушателей — не то же самое, что <code>_count</code> во время реентрантного
+            notify (там часть слотов помечена tombstone).</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">add</span>(T listener)</span>
+            <p>Как <code>ChangeNotifier.addListener</code>: если тот же <code>listener</code> уже
+            зарегистрирован, добавляется ещё один инстанс — вызывается столько раз, сколько был добавлен,
+            снимается по одному вхождению за <code>remove</code>. При нехватке места массив удваивается
+            (или создаётся размером 1 при первом элементе).</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_removeAt</span>(<span class="kw">int</span> index) <span class="kw">// private</span></span>
+            <p>Сжимает backing-массив только если живых элементов после удаления ≤ половины его длины — иначе
+            просто сдвигает хвост на месте, без реаллокации. Без порога список рос бы, но никогда не уменьшался,
+            а с ним — не дёргался бы grow/shrink на каждый цикл add/remove одного элемента у границы.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">remove</span>(T listener)</span>
+            <p>Убирает первое вхождение (сравнение по <code>==</code>). Не найден — no-op, безопасно для
+            повторного вызова. Если вызвано во время активной итерации (<code>_notificationCallStackDepth &gt; 0</code>) —
+            слот лишь помечается <code>null</code> и увеличивается <code>_reentrantlyRemoved</code>; иначе —
+            немедленно <code>_removeAt</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">clear</span>()</span>
+            <p>Убирает всех слушателей; безопасен для вызова изнутри <code>notify</code> тем же способом, что и
+            <code>remove</code> (реентрантная пометка либо немедленный сброс).</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">notify</span>(void Function(T) callback, {onError})</span>
+            <p>Вызывает <code>callback</code> для каждого текущего слушателя. Слушатели, добавленные <b>во
+            время</b> вызова, в этот проход не попадают (цикл ограничен снапшотом <code>end = _count</code>,
+            зафиксированным до начала итерации); удалённые во время вызова — попадают, но пропускаются
+            (<code>listener == null</code>). После прохода, если глубина вложенности вернулась к нулю и есть
+            накопленные tombstone — вызывается <code>_compactAfterReentrantRemoval</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_compactAfterReentrantRemoval</span>() <span class="kw">// private</span></span>
+            <p>Физическая уборка tombstone-слотов, накопленных реентрантными remove/clear во время только что
+            завершившегося самого внешнего notify. Сильно разреженный случай (&gt;половины — tombstone) —
+            перевыделяет точный по размеру массив одним проходом; иначе — компактизация на месте попарными
+            свопами (каждый null-слот в живой части меняется местами с ближайшим следующим не-null).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- GUARDED WRITER -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="guarded_writer">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>guarded_writer.dart</h2>
+        <span class="file-path">lib/src/core/internal/guarded_writer.dart</span>
+      </div>
+      <p class="file-role">Decorator над <code>IStateWriter</code>, блокирующий коммиты после отмены токена —
+      второй рубеж защиты поверх контракта "команда сама проверяет <code>isCancelled</code> перед каждым commit".</p>
+
+      <div class="component" id="GuardedWriter">
+        <div class="component-head"><span class="badge class">final class</span><span class="component-name">GuardedWriter&lt;S&gt;</span> <span class="badge iface">implements IStateWriter</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">GuardedWriter(inner, token, commandLabel, {onDroppedCommit});</span>
+            <p><code>commandLabel</code> — имя команды для debug-сообщения (см. <code>DispatchLabeled</code>),
+            передаётся явно из <code>StateStore</code>, а не через <code>$runtimeType</code>, который для этого
+            класса всегда показал бы <code>GuardedWriter&lt;S&gt;</code>, а не саму команду.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">commit</span>(S nextState)</span>
+            <p>Если токен уже отменён — коммит отбрасывается: <b>не</b> доходит до <code>_inner.commit</code>.
+            Два независимых, опциональных диагностических канала при этом:</p>
+            <ul style="margin:6px 0 0 18px; color:var(--ink-soft); font-size:14.5px;">
+              <li><b>onDroppedCommit</b> — обычный колбэк, работающий в <i>любой</i> сборке (debug и release).
+              Нужен, когда отброшенный коммит — не просто баг для консоли, а событие, которое стоит отправить в
+              Sentry/аналитику прямо из продакшена (например, чтобы отследить частоту гонок вокруг конкретной
+              команды). По умолчанию <code>null</code>.</li>
+              <li><b>assert с always-true телом</b> — печатает подсказку только в debug-режиме (тот же паттерн,
+              что и в самом Flutter SDK) и никогда не бросает исключение — это подсказка разработчику при
+              отладке, а не канал продакшен-мониторинга.</li>
+            </ul>
+            <p>В любом случае коммит после отмены остаётся <b>тихим и безопасным</b> исходом: <code>commit</code>
+            никогда не бросает исключение из-за самой диагностики.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- EMITTING WRITER -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="emitting_writer">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>emitting_writer.dart</h2>
+        <span class="file-path">lib/src/core/internal/emitting_writer.dart</span>
+      </div>
+      <p class="file-role">Decorator над <code>IStateWriter</code>, немедленно публикующий каждое реальное
+      изменение состояния — синхронно, в момент вызова <code>commit</code>, а не отложенно.</p>
+
+      <div class="component" id="EmittingWriter">
+        <div class="component-head"><span class="badge class">final class</span><span class="component-name">EmittingWriter&lt;S&gt;</span> <span class="badge iface">implements IStateWriter</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">EmittingWriter(accessor, onChanged, equals) : _lastState = accessor.current;</span>
+            <p>Store обязан эмитировать в свой поток состояний <b>любой</b> успешный коммит, а не только
+            "было до / стало после" всей команды целиком — иначе многошаговые команды вроде
+            <code>LoadCommand</code> (коммитит промежуточный <code>Loadable.loading</code> перед результатом)
+            не показали бы спиннер подписчикам.</p>
+          </div>
+          <div class="member">
+            <span class="label">одно чтение хранилища вместо двух</span>
+            <p>Значение "предыдущее" кэшируется в поле <code>_lastState</code> при создании и обновляется на
+            каждый <code>commit</code> из уже известного <code>nextState</code>, а <b>не</b> через повторное
+            чтение <code>IStateAccessor.current</code> — для хранилищ с дорогим чтением (например, Hive с
+            шифрованием) это вдвое меньше IO на каждый коммит: было "прочитать + записать", стало только "записать".</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">commit</span>(S nextState) {
+  _accessor.commit(nextState);
+  <span class="kw">final</span> changed = !_equals(nextState, _lastState);
+  _lastState = nextState;
+  <span class="kw">if</span> (changed) _onChanged(nextState);
+}</span>
+            <p>Пишет в хранилище безусловно, но зовёт <code>_onChanged</code> только если новое значение
+            реально отличается от предыдущего по компаратору из конструктора.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- TRACKING WRITER -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="tracking_writer">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>tracking_writer.dart</h2>
+        <span class="file-path">lib/src/core/internal/tracking_writer.dart</span>
+      </div>
+      <p class="file-role">Decorator над <code>IStateWriter</code>, фиксирующий факт и "before"-состояние
+      commit'а — нужен там, где нельзя заранее знать состояние "до": в Stream-командах коммит происходит на
+      каждой итерации потока, до того как значение дойдёт до подписчика Store.</p>
+
+      <div class="component" id="TrackingWriter">
+        <div class="component-head"><span class="badge class">final class</span><span class="component-name">TrackingWriter&lt;S&gt;</span> <span class="badge iface">implements IStateWriter</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">TrackingWriter(inner, reader);</span>
+            <p>Оборачивает <code>EmittingWriter</code> как <code>_inner</code> и просто делегирует каждый
+            <code>commit</code>, так что в поток состояний уходит любое изменение сразу, независимо от
+            группировки по итерациям — публикация не входит в заботу этого класса.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">bool</span> <span class="nm">get</span> hasChanged =&gt; _changed;</span>
+            <p>Было ли зафиксировано новое состояние с момента последнего <code>reset</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">S <span class="nm">get</span> before</span>
+            <p>Состояние на момент <b>первого</b> commit после последнего <code>reset</code>. Читать до первого
+            commit в цикле — ошибка использования (<code>assert(_captured, ...)</code>).</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">reset</span>()</span>
+            <p>Сбрасывает флаги <code>_changed</code>/<code>_captured</code> — вызывается Store'ом после
+            обработки каждой итерации Stream-команды, чтобы сгруппировать все коммиты одной итерации в единый
+            цикл "before → after" для <code>DispatchEvent</code> (одна запись в логе на итерацию, а не на
+            каждый отдельный коммит внутри неё).</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">commit</span>(S nextState)</span>
+            <p>При первом commit после reset — захватывает <code>_before = _reader.current</code>. Затем
+            всегда выставляет <code>_changed = true</code> и делегирует в <code>_inner.commit</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- STATE STORE — the big one -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="state_store">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>state_store.dart</h2>
+        <span class="file-path">lib/src/core/state_store.dart</span>
+      </div>
+      <p class="file-role">Центральный объект всей библиотеки — единственная точка входа для чтения состояния и
+      диспатча команд. Не знает ничего о Flutter или каком-либо UI-фреймворке: файл — чистый Dart без единого
+      импорта <code>package:flutter</code> (Dependency Inversion — мост к фреймворку зависит от Store, а не наоборот).</p>
+
+      <div class="note tip">
+        <b>Матрица dispatch-методов</b><br>
+        <table style="width:100%; border-collapse:collapse; margin-top:8px; font-size:13.5px;">
+          <tr style="text-align:left; color:var(--brass-deep); font-family:'JetBrains Mono',monospace;">
+            <th style="padding:4px 8px;"></th><th style="padding:4px 8px;">без эффекта</th><th style="padding:4px 8px;">с эффектом</th>
+          </tr>
+          <tr><td style="padding:4px 8px;"><b>Stream</b></td><td style="padding:4px 8px;"><code>dispatchStream</code></td><td style="padding:4px 8px;"><code>dispatchStreamWithEffect</code></td></tr>
+          <tr><td style="padding:4px 8px;"><b>Async</b></td><td style="padding:4px 8px;"><code>dispatch</code></td><td style="padding:4px 8px;"><code>dispatchWithEffect</code></td></tr>
+          <tr><td style="padding:4px 8px;"><b>Sync</b></td><td style="padding:4px 8px;"><code>dispatchSync</code></td><td style="padding:4px 8px;"><code>dispatchSyncWithEffect</code></td></tr>
+        </table>
+        Каждая пара реализована через общий приватный метод (<code>_dispatchAsync</code>,
+        <code>_dispatchStream</code>, <code>_dispatchSyncInternal</code>) — единственное отличие внутри пары в
+        том, возвращает ли <code>execute()</code> команды ещё и side-эффект.
+      </div>
+
+      <div class="component" id="_ActiveStreamSubscription">
+        <div class="component-head"><span class="badge class">final class · internal</span><span class="component-name">_ActiveStreamSubscription</span></div>
+        <div class="card"><div class="member">
+          <p>Пара (активная <code>StreamSubscription&lt;void&gt;</code>, лейбл команды, её породившей). Лейбл
+          хранится отдельно, потому что в момент отмены (вытеснение новым dispatchStream той же группы, явный
+          cancelStream или close) самой команды уже нет под рукой — её видел только <code>execute()</code> в
+          момент подписки — а <code>DispatchEvent</code> требует <code>commandLabel</code>.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="_ListenerHub">
+        <div class="component-head"><span class="badge class">final class · internal</span><span class="component-name">_ListenerHub&lt;S, E&gt;</span></div>
+        <p class="component-tagline">Четыре независимых канала синхронной публикации: изменения состояния,
+        side-эффекты, исходы диспатча, необработанные исключения.</p>
+        <div class="card">
+          <div class="member">
+            <p>Выделено в отдельный класс, а не как четыре поля прямо в <code>StateStore</code>, чтобы Store
+            отвечал только за оркестрацию диспатча (создание writer'ов, управление токенами отмены, подписки
+            на Stream-команды), а не совмещал это с хранением/итерацией/компактизацией четырёх списков
+            слушателей — отдельная, самодостаточная забота (Single Responsibility).</p>
+            <p>Каждый канал — <code>CallbackList</code>, а не простой <code>List</code>: методы вызываются на
+            <b>каждый</b> commit/dispatch/effect — при высокочастотных источниках (тикер котировок, IMU,
+            live-курсор) копирующий обход аллоцировал бы новый список на каждую публикацию.</p>
+          </div>
+          <div class="member">
+            <span class="sig">CallbackList&lt;void Function(S)&gt; changes;
+CallbackList&lt;void Function(E)&gt; effects;
+CallbackList&lt;void Function(DispatchEvent&lt;S&gt;)&gt; dispatches;
+CallbackList&lt;void Function(Object, StackTrace)&gt; errors;</span>
+          </div>
+          <div class="member">
+            <span class="sig">void <span class="nm">notifyChange</span>(S state) =&gt;
+    changes.notify((l) =&gt; l(state), onError: _reportListenerError);
+<span class="kw">// notifyEffect / notifyDispatch / notifyError — та же форма</span></span>
+            <p>Все четыре изолируют исключения каждого отдельного слушателя через
+            <code>CallbackList.notify(onError: ...)</code>: упавший аналитический хук или сломанный логгер не
+            мешает доставить событие остальным подписчикам (<code>HelmController</code>, другим
+            addOnChanged-колбэкам). Перехваченная ошибка репортится в канал <code>errors</code>
+            (<code>_reportListenerError</code>), что даёт ей ровно одного полноценного адресата вместо
+            молчаливого поглощения.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_reportListenerError</span>(Object error, StackTrace st)</span>
+            <p>Особый случай: если сам слушатель канала <code>errors</code> бросает исключение, дальнейшая
+            эскалация невозможна (адресовать больше некуда). Реентрантный гард <code>_reportingError</code> не
+            даёт исключению из самого error-слушателя запустить рекурсивный повторный отчёт — вместо этого
+            печатается debug-only подсказка тем же способом, что и <code>GuardedWriter</code>, вместо падения
+            всего Store. При первом входе — зовёт <code>errors.notify</code> уже <b>без</b> собственного
+            <code>onError</code> (чтобы не создать бесконечную рекурсию), а любое исключение оттуда осознанно
+            проглатывается в <code>catch (_) {}</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">clear</span>()</span>
+            <p>Очищает все четыре канала — вызывается из <code>StateStore.close</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <hr class="sep">
+
+      <div class="component" id="StateStore">
+        <div class="component-head"><span class="badge class">final class</span><span class="component-name">StateStore&lt;S, E&gt;</span></div>
+        <p class="component-tagline">Три принципа библиотеки, воплощённые в этом классе: <b>явность</b>
+        (каждый исход диспатча типизирован через <code>DispatchResult</code>), <b>разделение прав</b> (команды
+        получают ровно то, что нужно — <code>IStateReader</code> или <code>IStateWriter</code>, редко оба),
+        <b>отменяемость</b> (асинхронные команды прерываются через <code>CancelToken</code>).</p>
+
+        <h4 style="margin-top:26px; font-size:16px;">Конструкторы</h4>
+        <div class="card">
+          <div class="member">
+            <span class="sig">StateStore({
+  <span class="kw">required</span> S initialState,
+  IStateStorage&lt;S&gt;? storage,
+  <span class="kw">this</span>.logStreamEvents = <span class="kw">true</span>,
+  <span class="ty">bool Function(S, S)?</span> equals,
+  <span class="ty">void Function(String, S)?</span> onDroppedCommit,
+})</span>
+            <p>Основной конструктор. Если <code>storage</code> не передан — используется
+            <code>StateMemoryStorage(initialState)</code>. <code>equals</code> по умолчанию — <code>defaultEquals&lt;S&gt;</code>.
+            <code>logStreamEvents</code> (по умолчанию <code>true</code>) — каждая итерация активной
+            Stream-команды с изменением состояния порождает <code>DispatchEvent</code> в
+            <code>addDispatchListener</code>; на публикацию состояния это не влияет — она происходит всегда, на
+            каждый реальный коммит. <code>onDroppedCommit</code> — хук диагностики отброшенного
+            <code>GuardedWriter</code> коммита, работающий и в release (см. <code>guarded_writer.dart</code>).</p>
+          </div>
+          <div class="member">
+            <span class="sig">StateStore.fromStorage(IStateStorage&lt;S&gt; storage, {logStreamEvents, equals, onDroppedCommit})</span>
+            <p>Создаёт Store из готового хранилища — начальное состояние берётся из <code>storage.read()</code>
+            вместо явного параметра.</p>
+          </div>
+        </div>
+
+        <h4 style="margin-top:26px; font-size:16px;">Поля</h4>
+        <div class="card">
+          <div class="member"><span class="sig">StateAccessor&lt;S&gt; _accessor;</span><p>Единственная точка физического доступа к состоянию — все команды и внутренние writer'ы работают через него.</p></div>
+          <div class="member"><span class="sig">bool Function(S, S) _equals;</span><p>Компаратор "состояние не изменилось". Передай свой, если <code>S</code> — мутируемая коллекция или тип с дорогим/неверным <code>==</code>.</p></div>
+          <div class="member"><span class="sig">void Function(String, S)? _onDroppedCommit;</span></div>
+          <div class="member"><span class="sig">_ListenerHub&lt;S, E&gt; _listeners;</span></div>
+          <div class="member"><span class="sig">Stream&lt;S&gt;? _states;</span><p>Кэш геттера <code>states</code> — создаётся лениво один раз; <code>Stream.multi</code> сам заново прогоняет свой колбэк на каждого нового подписчика.</p></div>
+          <div class="member"><span class="sig">Set&lt;MultiStreamController&lt;S&gt;&gt; _stateStreamControllers;</span><p>Активные per-listener контроллеры <code>states</code> — нужны, чтобы <code>close</code> мог явно завершить (<code>.close()</code>) каждый из них; иначе подписчики <code>states</code> не получили бы <code>done</code>-событие при закрытии Store.</p></div>
+          <div class="member"><span class="sig">StreamController&lt;E&gt;? _effectsController;</span></div>
+          <div class="member"><span class="sig">Map&lt;Object, _ActiveStreamSubscription&gt; _streamSubs;
+Map&lt;Object, CancelToken&gt; _cancelTokens;</span><p>Реестры активных stream-подписок и async cancel-токенов, оба ключуются по <code>_keyOf(command)</code> — либо <code>DispatchKeyed.dispatchKey</code>, либо <code>runtimeType</code>.</p></div>
+          <div class="member"><span class="sig">bool _closed;</span></div>
+        </div>
+
+        <h4 style="margin-top:26px; font-size:16px;">Реактивность — регистрация слушателей</h4>
+        <div class="card">
+          <div class="member">
+            <span class="sig">void Function() <span class="nm">addOnChanged</span>(void Function(S) listener)</span>
+            <p>Слушатель каждого реального изменения состояния (сравнение по компаратору из конструктора).
+            Возвращает функцию отписки.</p>
+          </div>
+          <div class="member">
+            <span class="sig">void Function() <span class="nm">addOnEffect</span>(void Function(E) listener)</span>
+            <p>Слушатель каждого эмитированного side-эффекта.</p>
+          </div>
+          <div class="member">
+            <span class="sig">void Function() <span class="nm">addDispatchListener</span>(void Function(DispatchEvent&lt;S&gt;) listener)</span>
+            <p>Слушатель каждого диспатча — при успехе, ошибке и отмене. Несколько независимых слушателей
+            (логи + аналитика + Sentry) не конфликтуют. Видит отмену/вытеснение и async-, и Stream-команд —
+            оба пути эмитируют <code>DispatchEvent</code> с <code>cancelReason</code> через один и тот же механизм.</p>
+          </div>
+          <div class="member">
+            <span class="sig">void Function() <span class="nm">addMiddleware</span>(StoreMiddleware&lt;S&gt; middleware) =&gt;
+    addDispatchListener(middleware.onDispatch);</span>
+            <p>Именованная форма поверх <code>addDispatchListener</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">void Function() <span class="nm">addErrorListener</span>(void Function(Object, StackTrace) listener)</span>
+            <p>Слушатель необработанных исключений внутри dispatch — вызывается дополнительно к возврату <code>DispatchFailure</code>.</p>
+          </div>
+        </div>
+
+        <h4 style="margin-top:26px; font-size:16px;">Stream-интероп</h4>
+        <div class="card">
+          <div class="member">
+            <span class="sig">Stream&lt;S&gt; <span class="nm">get</span> states</span>
+            <p>Broadcast-<code>Stream</code> состояний поверх <code>addOnChanged</code> — для кода, ожидающего
+            <code>Stream</code> (<code>StreamBuilder</code>, <code>await for</code>). В отличие от
+            <code>effects</code>, каждый новый подписчик сразу получает <b>текущее</b> состояние первым
+            событием, а дальше — каждое изменение. Без этого поздний подписчик (типичный сценарий:
+            <code>StreamBuilder</code> создаётся уже после первых изменений Store) не увидел бы актуальное
+            состояние вплоть до следующего коммита — источник "пустого экрана до первого чужого действия".</p>
+            <p>Реализовано через <code>Stream.multi</code>: колбэк выполняется заново для каждого отдельного
+            подписчика, поэтому "seed" не смешивается между разными слушателями брошенного broadcast-потока.
+            Если Store уже закрыт — контроллер сразу закрывается, ничего не эмитируя.</p>
+          </div>
+          <div class="member">
+            <span class="sig">Stream&lt;E&gt; <span class="nm">get</span> effects</span>
+            <p>Broadcast-<code>Stream</code> side-эффектов поверх <code>addOnEffect</code>. Чистый поток
+            событий: в отличие от <code>states</code>, не несёт "текущего значения" и ничего не отправляет
+            новому подписчику при подписке. Контроллер — обычный <code>StreamController.broadcast(sync: true)</code>,
+            создаётся лениво.</p>
+          </div>
+        </div>
+
+        <h4 style="margin-top:26px; font-size:16px;">Синхронное чтение и debug</h4>
+        <div class="card">
+          <div class="member"><span class="sig">S <span class="nm">get</span> state =&gt; _accessor.current;</span></div>
+          <div class="member"><span class="sig">bool <span class="nm">get</span> isClosed =&gt; _closed;</span></div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">debugResetForTesting</span>(S state)</span>
+            <p>Принудительно заменяет состояние, минуя обычный dispatch-цикл — <b>только для тестов</b>. Без
+            <code>DispatchEvent</code>, без проверки <code>isClosed</code>. Публикует изменение, если значение
+            реально отличается. Префикс <code>debug</code> — как <code>debugPrint</code>/<code>debugDumpApp</code>
+            в самом Flutter SDK: сигнализирует "не для продакшен-кода", делая случайное использование в обычной
+            команде/сервисе заметным при code review и легко находимым поиском по имени.</p>
+          </div>
+        </div>
+
+        <h4 style="margin-top:26px; font-size:16px;">Stream dispatch</h4>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">dispatchStream</span>(IStreamCommand&lt;S&gt; command)</span>
+            <p>Подписывается на Stream-команду без side-эффектов. Если команда с той же группой отмены уже
+            активна — предыдущая подписка отменяется первой. После <code>close</code> — no-op.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">dispatchStreamWithEffect</span>(IStreamSideEffect&lt;S, E&gt; command)</span>
+            <p>Та же семантика отмены предыдущей подписки; дополнительно каждый ненулевой элемент потока
+            эмитируется через <code>_listeners.notifyEffect</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_dispatchStream</span>(Object command, Stream&lt;void&gt; Function(TrackingWriter&lt;S&gt;) execute)</span>
+            <p>Общее ядро обоих публичных методов: отменяет предыдущую подписку той же группы
+            (<code>_cancelStreamSubscription(key, superseded)</code>), заводит общий <code>TrackingWriter</code>
+            поверх свежего <code>EmittingWriter</code> и подписывается на поток, который строит <code>execute</code>
+            поверх этого writer'а. Разница между двумя публичными методами — только в том, публикует ли
+            <code>execute</code> side-эффект на каждый элемент потока.</p>
+          </div>
+        </div>
+
+        <h4 style="margin-top:26px; font-size:16px;">Async dispatch</h4>
+        <div class="card">
+          <div class="member">
+            <span class="sig">Future&lt;DispatchResult&lt;S&gt;&gt; <span class="nm">dispatch</span>(IAsyncCommand&lt;S&gt; command)</span>
+            <p>Если команда с той же группой отмены уже выполняется — предыдущая отменяется с
+            <code>CancelReason.superseded</code>. После <code>close</code> немедленно возвращает
+            <code>DispatchCancelled(storeClosed)</code>, не запуская команду.</p>
+          </div>
+          <div class="member">
+            <span class="sig">Future&lt;DispatchResult&lt;S&gt;&gt; <span class="nm">dispatchWithEffect</span>(IAsyncSideEffect&lt;S, E&gt; command)</span>
+            <p>Как <code>dispatch</code>, но с side-эффектом.</p>
+          </div>
+          <div class="member">
+            <span class="sig">Future&lt;DispatchResult&lt;S&gt;&gt; <span class="nm">_dispatchAsync</span>(Object command, execute)</span>
+            <p>Общее ядро обоих публичных методов: строит защищённый от коммитов-после-отмены writer
+            (<code>GuardedWriter</code> поверх <code>EmittingWriter</code>, через <code>_guardedWriter</code>) и
+            прогоняет его через <code>_runAsync</code>.</p>
+          </div>
+        </div>
+
+        <h4 style="margin-top:26px; font-size:16px;">Sync dispatch</h4>
+        <div class="card">
+          <div class="member">
+            <span class="sig">DispatchResult&lt;S&gt; <span class="nm">dispatchSync</span>(ISyncCommand&lt;S&gt; command)</span>
+            <p>Выполняется мгновенно, не может быть отменена. После <code>close</code> немедленно возвращает
+            <code>DispatchCancelled(storeClosed)</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">DispatchResult&lt;S&gt; <span class="nm">dispatchSyncWithEffect</span>(ISyncSideEffect&lt;S, E&gt; command)</span>
+          </div>
+          <div class="member">
+            <span class="sig">DispatchResult&lt;S&gt; <span class="nm">_dispatchSyncInternal</span>(Object command, run)</span>
+            <p>Общее ядро: если Store закрыт — сразу <code>DispatchCancelled</code>; иначе прогоняет через
+            <code>_runSync</code>, внутри которого <code>run()</code> вызывает <code>command.execute</code> и
+            коммитит результат в <code>_accessor</code>.</p>
+          </div>
+        </div>
+
+        <h4 style="margin-top:26px; font-size:16px;">Управление жизненным циклом</h4>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">cancel</span>&lt;U&gt;() =&gt; cancelKey(U);</span>
+            <p>Отменяет активную async-команду по типу <code>U</code> — работает для команд без собственного
+            <code>DispatchKeyed.dispatchKey</code> (обычный случай, когда группа отмены — <code>runtimeType</code>).</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">cancelKey</span>(Object key)</span>
+            <p>Отменяет по явному ключу — см. <code>DispatchKeyed</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">cancelAll</span>()</span>
+            <p>Отменяет все активные async-команды. Уже завершённые не затрагиваются.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">cancelStream</span>&lt;U&gt;() =&gt; cancelStreamKey(U);
+<span class="kw">void</span> <span class="nm">cancelStreamKey</span>(Object key)</span>
+            <p>Отменяет активную stream-подписку по типу/ключу. Как и отмена async-команды, эмитирует
+            <code>DispatchEvent</code> с <code>cancelReason: userRequested</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">close</span>()</span>
+            <p>Освобождает все ресурсы: отменяет активные async-команды и stream-подписки (с причиной
+            <code>storeClosed</code>), снимает всех слушателей (<code>_listeners.clear()</code>), закрывает все
+            контроллеры <code>states</code>/<code>effects</code>. Повторный вызов — no-op. После вызова все
+            <code>dispatch*</code>-методы возвращают <code>DispatchCancelled(storeClosed)</code> (или ничего не
+            делают для Stream-варианта), не бросая исключений — это позволяет безопасно вызывать <code>close</code>
+            из владельца жизненного цикла даже если где-то ещё "в полёте" остался вызов dispatch.</p>
+          </div>
+        </div>
+
+        <h4 style="margin-top:26px; font-size:16px;">Приватное ядро — оркестрация</h4>
+        <div class="card">
+          <div class="member">
+            <span class="sig">EmittingWriter&lt;S&gt; <span class="nm">_emittingWriter</span>() =&gt;
+    EmittingWriter&lt;S&gt;(_accessor, _listeners.notifyChange, _equals);</span>
+            <p>Собирает стандартный писатель "закоммитил → опубликовал" — общая точка входа для
+            <code>_dispatchAsync</code> (дополнительно обёрнутый в <code>GuardedWriter</code>) и
+            <code>_dispatchStream</code> (дополнительно обёрнутый в <code>TrackingWriter</code>).</p>
+          </div>
+          <div class="member">
+            <span class="sig">GuardedWriter&lt;S&gt; <span class="nm">_guardedWriter</span>(CancelToken token, String label)</span>
+            <p><code>EmittingWriter</code>, защищённый от коммитов после отмены токена — то, что нужно любой
+            async-команде.</p>
+          </div>
+          <div class="member">
+            <span class="sig">Object <span class="nm">_keyOf</span>(Object command) =&gt;
+    command is DispatchKeyed ? command.dispatchKey : command.runtimeType;</span>
+          </div>
+          <div class="member">
+            <span class="sig">String <span class="nm">_labelOf</span>(Object command) =&gt;
+    command is DispatchLabeled ? command.dispatchLabel : command.runtimeType.toString();</span>
+          </div>
+          <div class="member">
+            <span class="sig">DispatchEvent&lt;S&gt; <span class="nm">_buildEvent</span>({label, before, kind, elapsed, error, cancelReason})</span>
+            <p>Собирает <code>DispatchEvent</code>, беря <code>after</code> всегда из актуального
+            <code>_accessor.current</code> на момент вызова.</p>
+          </div>
+          <div class="member">
+            <span class="sig">Future&lt;DispatchResult&lt;S&gt;&gt; <span class="nm">_runAsync</span>(Object key, String label, _AsyncBody&lt;E&gt; body)</span>
+            <p>Единое ядро для всех async-диспатчей. Порядок действий:</p>
+            <ol style="margin:6px 0 0 18px; color:var(--ink-soft); font-size:14.5px;">
+              <li><code>token = _acquireToken(key)</code> — отменяет предыдущий токен группы, создаёт новый.</li>
+              <li>Замеряет время <b>только если</b> есть хотя бы один слушатель <code>dispatches</code>
+              (<code>_listeners.dispatches.isEmpty ? null : Stopwatch()..start()</code>) — <code>elapsed</code>
+              не считается впустую, если его некому показать.</li>
+              <li>Вызывает <code>body(token)</code>. Публикация состояния уже произошла синхронно внутри
+              <code>EmittingWriter</code> на каждый commit — дополнительная эмиссия здесь не нужна ни при каком исходе.</li>
+              <li>Если токен отменён к концу выполнения — эмитирует <code>DispatchEvent</code> с
+              <code>cancelReason</code> и возвращает <code>DispatchCancelled</code>.</li>
+              <li>Иначе — эмитирует эффект (если есть), затем <code>DispatchEvent</code> успеха, возвращает
+              <code>DispatchSuccess</code>.</li>
+              <li>При исключении — <code>notifyError</code>, затем <code>DispatchEvent</code> с ошибкой,
+              возвращает <code>DispatchFailure</code>.</li>
+              <li><code>finally</code>: <code>_releaseToken(key, token)</code> — убирает токен из реестра, если
+              он не был заменён новым.</li>
+            </ol>
+          </div>
+          <div class="member">
+            <span class="sig">DispatchResult&lt;S&gt; <span class="nm">_runSync</span>(String label, _SyncBody&lt;E&gt; body)</span>
+            <p>Единое ядро для sync-диспатчей. Sync-команды атомарны (чистая функция → один коммит), поэтому
+            исключение внутри <code>body</code> гарантированно происходит <b>до</b> коммита. После успешного
+            <code>body()</code> — <code>_publishIfChanged(before)</code>, эмиссия эффекта и
+            <code>DispatchEvent</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_subscribeStream</span>(key, label, Stream&lt;void&gt; stream, TrackingWriter&lt;S&gt; writer)</span>
+            <p>Общая логика подписки на stream-команды. Эмитирует <code>DispatchEvent</code> только на
+            итерациях, где команда реально закоммитила ЧТО-ТО ОТЛИЧНОЕ от состояния на начало итерации (по
+            <code>_equals</code>) — публикация состояния в <code>addOnChanged</code> от этого не зависит, она
+            уже сделана <code>EmittingWriter</code> на каждый отдельный коммит по тому же компаратору.</p>
+            <div class="note">
+            <code>writer.hasChanged</code> сам по себе фиксирует лишь факт вызова <code>commit</code> хоть раз
+            за итерацию — не то же самое, что "состояние реально другое": <code>EmittingWriter</code> может не
+            опубликовать коммит, если <code>_equals(next, last)</code>, а <code>TrackingWriter</code> всё равно
+            отметит <code>hasChanged = true</code>. Без явной проверки <code>!_equals(...)</code> в лог утекали
+            бы "пустые" stream-события, где <code>before == after</code> по собственному компаратору Store.
+            </div>
+            <p>Команда могла синхронно закоммитить <b>до</b> подписки на поток (например, начальный
+            <code>Loadable.loading</code> в <code>WatchCommand</code>) — публикация уже произошла, здесь этот
+            "нулевой" цикл логируется отдельно от первого элемента потока. Ошибки потока (<code>onError</code>
+            подписки) идут в <code>notifyError</code> + <code>DispatchEvent</code>, но <b>не</b> в канал
+            <code>effects</code> — тот только для side-эффектов команды. <code>cancelOnError: false</code>:
+            ошибка одного элемента не рвёт подписку целиком.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_logStreamCycle</span>(String label, TrackingWriter&lt;S&gt; writer)</span>
+            <p>Закрывает один цикл "before → after": сбрасывает <code>writer</code> и, если
+            <code>logStreamEvents</code> включён и состояние реально изменилось, публикует
+            <code>DispatchEvent</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_cancelStreamSubscription</span>(Object key, CancelReason reason)</span>
+            <p>Отменяет активную подписку по ключу и эмитирует <code>DispatchEvent</code> с соответствующим
+            <code>CancelReason</code> — тот же контракт, что и у отмены async-команд в <code>_runAsync</code>.
+            Без этого <code>addDispatchListener</code> вообще не видел бы отмену/вытеснение stream-команд —
+            асимметрия с async-путём, где <code>DispatchCancelled</code> виден и через возврат
+            <code>dispatch</code>, и через <code>addDispatchListener</code>. No-op, если по <code>key</code> нет
+            активной подписки.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_publishIfChanged</span>(S before)</span>
+            <p>Публикует состояние, если оно реально изменилось относительно <code>before</code> — используется
+            <code>_runSync</code> и <code>debugResetForTesting</code>, которые делают ровно один коммит.
+            Async/Stream-диспатчи публикуют на каждый отдельный коммит через <code>EmittingWriter</code> напрямую,
+            эта функция им не нужна.</p>
+          </div>
+          <div class="member">
+            <span class="sig">CancelToken <span class="nm">_acquireToken</span>(Object key)</span>
+            <p>Отменяет предыдущий токен той же группы (<code>superseded</code>) и создаёт новый, немедленно
+            сохраняя его в реестре.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_releaseToken</span>(Object key, CancelToken token)</span>
+            <p>Удаляет токен из реестра, только если он всё ещё тот же самый объект, что был выдан
+            (<code>_cancelTokens[key] == token</code>) — если его успели заменить более новым вызовом, чужой
+            токен не трогается.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- STORE BUILDER -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="store_builder">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>store_builder.dart</h2>
+        <span class="file-path">lib/src/core/store_builder.dart</span>
+      </div>
+      <p class="file-role">Fluent-строитель <code>StateStore</code> (классический Builder pattern) — удобная
+      сборка Store с несколькими хуками без длинного конструктора.</p>
+
+      <div class="component" id="StoreBuilder">
+        <div class="component-head"><span class="badge class">final class</span><span class="component-name">StoreBuilder&lt;S, E&gt;</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">StoreBuilder(S initialState);</span>
+          </div>
+          <div class="member">
+            <span class="sig">StoreBuilder&lt;S, E&gt; <span class="nm">withConfig</span>(StoreConfig&lt;S, E&gt; config)</span>
+            <p>Эквивалент последовательного вызова <code>withStorage</code>/<code>onChanged</code>/<code>onEffect</code>/<code>onError</code>/<code>onDispatch</code>/<code>withEquals</code>/<code>withDroppedCommitHandler</code> для каждого заданного в конфиге поля.</p>
+          </div>
+          <div class="member">
+            <span class="sig">StoreBuilder&lt;S, E&gt; <span class="nm">withEquals</span>(bool Function(S, S) equals)</span>
+            <p>Можно вызвать только один раз (<code>assert(_equals == null)</code>).</p>
+          </div>
+          <div class="member">
+            <span class="sig">StoreBuilder&lt;S, E&gt; <span class="nm">withStorage</span>(IStateStorage&lt;S&gt; storage)</span>
+            <p>Без вызова используется <code>StateMemoryStorage</code>. Можно вызвать только один раз.</p>
+          </div>
+          <div class="member">
+            <span class="sig">StoreBuilder&lt;S, E&gt; <span class="nm">withDroppedCommitHandler</span>(void Function(String, S) handler)</span>
+            <p>Можно вызвать только один раз; для нескольких независимых обработчиков объедини их в одну
+            функцию перед передачей.</p>
+          </div>
+          <div class="member">
+            <span class="sig">StoreBuilder&lt;S, E&gt; <span class="nm">onChanged</span>(void Function(S) callback)
+StoreBuilder&lt;S, E&gt; <span class="nm">onEffect</span>(void Function(E) callback)
+StoreBuilder&lt;S, E&gt; <span class="nm">onError</span>(void Function(Object, StackTrace) handler)
+StoreBuilder&lt;S, E&gt; <span class="nm">onDispatch</span>(void Function(DispatchEvent&lt;S&gt;) handler)</span>
+            <p>Каждый из четырёх можно вызывать <b>многократно</b> — каждый вызов добавляет независимого
+            слушателя в соответствующий внутренний список (<code>_onChanged</code>/<code>_onEffect</code>/<code>_onError</code>/<code>_onDispatch</code>),
+            все они регистрируются при <code>build()</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">StoreBuilder&lt;S, E&gt; <span class="nm">withMiddleware</span>(StoreMiddleware&lt;S&gt; middleware)</span>
+            <p>Форма поверх <code>onDispatch</code>, удобная, когда кросс-катаную заботу естественнее оформить классом.</p>
+          </div>
+          <div class="member">
+            <span class="sig">StoreBuilder&lt;S, E&gt; <span class="nm">disableStreamDispatchLogging</span>()</span>
+            <p>Выставляет <code>_logStreamEvents = false</code> — см. <code>StoreConfig.logStreamEvents</code>. Публикацию состояния не затрагивает.</p>
+          </div>
+          <div class="member">
+            <span class="sig">StateStore&lt;S, E&gt; <span class="nm">build</span>()</span>
+            <p>Создаёт <code>StateStore</code> (через обычный конструктор либо <code>fromStorage</code>, в
+            зависимости от того, вызывался ли <code>withStorage</code>), затем последовательно регистрирует все
+            накопленные <code>onChanged</code>/<code>onEffect</code>/<code>onError</code>/<code>onDispatch</code>/<code>middleware</code>
+            хуки. После вызова экземпляр <code>StoreBuilder</code> повторно использовать не следует.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- STORE CONFIG -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="store_config">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>store_config.dart</h2>
+        <span class="file-path">lib/src/core/store_config.dart</span>
+      </div>
+      <p class="file-role">Готовый неизменяемый набор хуков и хранилища для <code>StoreBuilder.withConfig</code> —
+      удобно для тестов, DI-контейнеров и переиспользования настроек между сборками Store.</p>
+
+      <div class="component" id="StoreConfig">
+        <div class="component-head"><span class="badge class">final class</span><span class="component-name">StoreConfig&lt;S, E&gt;</span></div>
+        <div class="card">
+          <div class="member"><span class="label">onChanged</span><p>Вызывается после каждого успешного обновления состояния.</p></div>
+          <div class="member"><span class="label">onEffect</span><p>Вызывается после каждого эмитированного side-эффекта.</p></div>
+          <div class="member"><span class="label">onError</span><p>Вызывается при необработанном исключении внутри dispatch.</p></div>
+          <div class="member"><span class="label">onDispatch</span><p>Вызывается после каждого dispatch — при успехе, ошибке и отмене.</p></div>
+          <div class="member"><span class="label">storage</span><p>Персистентное хранилище. Если <code>null</code> — <code>StateMemoryStorage</code>.</p></div>
+          <div class="member"><span class="label">logStreamEvents</span><p>По умолчанию <code>true</code>. Выключи, если поток шлёт значения очень часто и отдельный <code>DispatchEvent</code> на каждую итерацию не нужен ни в логах, ни в DevTools.</p></div>
+          <div class="member"><span class="label">equals</span><p>Компаратор "состояние не изменилось" — по умолчанию <code>==</code>.</p></div>
+          <div class="member"><span class="label">onDroppedCommit</span><p>Хук диагностики коммита, отброшенного <code>GuardedWriter</code> после отмены.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- HELM.DART BARREL -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="helm_barrel">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>helm.dart</h2>
+        <span class="file-path">lib/helm.dart — точка входа Core-пакета</span>
+      </div>
+      <p class="file-role">Библиотечный barrel-файл: только экспорты, ноль логики. Точка входа для
+      <code>import 'package:helm/helm.dart'</code>. Экспортирует всё содержимое <code>src/core/</code>:
+      <code>cancel_token.dart</code>, <code>dispatch.dart</code>, <code>equality.dart</code>, <code>loadable.dart</code>,
+      <code>loadable_command.dart</code>, <code>middleware.dart</code>, <code>state_access.dart</code>,
+      <code>state_command.dart</code>, <code>state_effect_command.dart</code>, <code>state_storage.dart</code>,
+      <code>state_store.dart</code>, <code>store_builder.dart</code>, <code>store_config.dart</code>.
+      Файлы каталога <code>internal/</code> (writer'ы, <code>CallbackList</code>) намеренно <b>не</b> экспортируются —
+      это деталь реализации Store, а не публичный API.</p>
+    </section>
+
+    <hr class="sep" style="border-top:3px double var(--navy);">
+
+    <!-- ================================================================ -->
+    <!-- DISPATCH PROXY -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="dispatch_proxy">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>dispatch_proxy.dart</h2>
+        <span class="file-path">lib/src/flutter/dispatch_proxy.dart</span>
+      </div>
+      <p class="file-role">Первый файл слоя Flutter-моста. Устраняет дублирование dispatch-API между
+      <code>HelmController</code> и <code>HelmFeature</code>.</p>
+
+      <div class="component" id="DispatchProxy">
+        <div class="component-head"><span class="badge mixin">mixin</span><span class="component-name">DispatchProxy&lt;S, E&gt;</span></div>
+        <p class="component-tagline">Пробрасывает весь dispatch-API <code>StateStore</code> на объект, который знает, как добраться до актуального Store.</p>
+        <div class="card">
+          <div class="member">
+            <p>Раньше один и тот же набор из 8 методов (<code>dispatch</code>, <code>dispatchWithEffect</code>,
+            <code>dispatchSync</code>, <code>dispatchSyncWithEffect</code>, <code>dispatchStream</code>,
+            <code>dispatchStreamWithEffect</code>, <code>cancel</code>, <code>cancelAll</code>,
+            <code>cancelStream</code>) был дословно продублирован в <code>HelmController</code> (проброс на
+            <code>store</code>) и в <code>HelmFeature</code> (проброс на <code>_ctrl</code>, который сам
+            пробрасывает на <code>store</code>). Здесь тело этих методов существует ровно один раз.</p>
+            <p><b>Композиция вместо наследования:</b> и <code>HelmController</code>, и <code>HelmFeature</code>
+            подмешивают этот миксин, не становясь при этом друг для друга ни родителем, ни потомком — у них
+            просто общий фрагмент поведения.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">@protected</span>
+StateStore&lt;S, E&gt; <span class="nm">get</span> dispatchTarget;</span>
+            <p>Store, на который пробрасываются вызовы. У <code>HelmController</code> это его собственное поле
+            <code>store</code>; у <code>HelmFeature</code> — <code>store</code> актуального контроллера
+            (<code>currentController.store</code>).</p>
+            <div class="note">Помечен <code>@protected</code>: это внутренний контракт между миксином и его
+            двумя потребителями, а не часть публичного API приложения. Обычный <code>_</code>-приватный член
+            здесь не подошёл бы: приватные имена в Dart видны только внутри одного файла-библиотеки, а
+            <code>HelmController</code> и <code>HelmFeature</code> реализуют этот геттер каждый в своём файле.</div>
+          </div>
+          <div class="member">
+            <span class="sig">Future&lt;DispatchResult&lt;S&gt;&gt; <span class="nm">dispatch</span>(IAsyncCommand&lt;S&gt; command) =&gt; dispatchTarget.dispatch(command);
+Future&lt;DispatchResult&lt;S&gt;&gt; <span class="nm">dispatchWithEffect</span>(IAsyncSideEffect&lt;S, E&gt; command) =&gt; ...
+DispatchResult&lt;S&gt; <span class="nm">dispatchSync</span>(ISyncCommand&lt;S&gt; command) =&gt; ...
+DispatchResult&lt;S&gt; <span class="nm">dispatchSyncWithEffect</span>(ISyncSideEffect&lt;S, E&gt; command) =&gt; ...
+<span class="kw">void</span> <span class="nm">dispatchStream</span>(IStreamCommand&lt;S&gt; command) =&gt; ...
+<span class="kw">void</span> <span class="nm">dispatchStreamWithEffect</span>(IStreamSideEffect&lt;S, E&gt; command) =&gt; ...
+<span class="kw">void</span> <span class="nm">cancel</span>&lt;U&gt;() =&gt; dispatchTarget.cancel&lt;U&gt;();
+<span class="kw">void</span> <span class="nm">cancelAll</span>() =&gt; dispatchTarget.cancelAll();
+<span class="kw">void</span> <span class="nm">cancelStream</span>&lt;U&gt;() =&gt; dispatchTarget.cancelStream&lt;U&gt;();</span>
+            <p>Все восемь методов — однострочные проброс-вызовы на <code>dispatchTarget</code>, семантически
+            идентичны одноимённым методам <code>StateStore</code> (см. раздел <code>state_store.dart</code>).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- BINDING UTILS -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="binding_utils">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>binding_utils.dart</h2>
+        <span class="file-path">lib/src/flutter/binding_utils.dart</span>
+      </div>
+      <p class="file-role">Общий алгоритм "переподключиться к новому контроллеру фичи после overrideWith/принудительного
+      dispose" — единственная функция, переиспользуемая буквально всеми биндингами моста.</p>
+
+      <div class="component" id="swapController">
+        <div class="component-head"><span class="badge fn">function</span><span class="component-name">swapController&lt;S, E&gt;({feature, current, removeListener, addListener})</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">HelmController&lt;S, E&gt;? <span class="nm">swapController</span>&lt;S, E&gt;({
+  <span class="kw">required</span> HelmFeature&lt;S, E&gt; feature,
+  <span class="kw">required</span> HelmController&lt;S, E&gt; current,
+  <span class="kw">required</span> <span class="ty">void Function(HelmController)</span> removeListener,
+  <span class="kw">required</span> <span class="ty">void Function(HelmController)</span> addListener,
+})</span>
+            <p>Спрашивает <code>HelmFeature.currentController</code>, сравнивает <code>identical</code> со
+            старым и, если он реально сменился, снимает слушателя со старого и вешает на новый через
+            переданные колбэки. Возвращает свежий контроллер, если он сменился, иначе <code>null</code>.</p>
+            <p>Что именно делать с "значением" после смены (<code>setState</code>/пересчитать
+            selector/дёрнуть effect) — решает вызывающий код; эта функция отвечает только за механику
+            переподключения слушателя.</p>
+            <p>Используется в: <code>HelmBuilder</code>/<code>HelmSelector</code>/<code>HelmListener</code>
+            (через <code>_FeatureBindingState._onLifecycle</code>), <code>HelmFeature.listen</code>,
+            <code>_FeatureBinding._onLifecycle</code> (в <code>helm_reactive.dart</code>).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- HELM CONTROLLER -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="helm_controller">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>helm_controller.dart</h2>
+        <span class="file-path">lib/src/flutter/helm_controller.dart</span>
+      </div>
+      <p class="file-role">Мост <code>StateStore</code> → «голое» Flutter-ядро.</p>
+
+      <div class="component" id="HelmController">
+        <div class="component-head"><span class="badge class">final class</span><span class="component-name">HelmController&lt;S, E&gt;</span> extends ChangeNotifier <span class="badge mixin">with DispatchProxy</span> <span class="badge iface">implements ValueListenable&lt;S&gt;</span></div>
+        <p class="component-tagline">ChangeNotifier + ValueListenable, на которых построены ListenableBuilder, ValueListenableBuilder, AnimatedBuilder и весь остальной core Flutter.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">HelmController(this.store) {
+  _unsubscribe = store.addOnChanged((_) =&gt; notifyListeners());
+}</span>
+            <p>Подписка на Store сделана через <code>StateStore.addOnChanged</code> — прямой синхронный
+            слушатель, без Stream-подписки и без <code>dart:async</code>: та же модель, что и у самого
+            <code>ChangeNotifier.notifyListeners()</code>.</p>
+            <div class="note">Не создаётся напрямую в обычном коде — управляется <code>HelmFeature</code>,
+            который лениво создаёт и владеет им. Прямой доступ к <code>store</code> остаётся как escape hatch
+            (например, <code>store.isClosed</code>).</div>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">final</span> StateStore&lt;S, E&gt; store;</span>
+            <p>Store текущей фичи. Для диспатча предпочтительнее методы <code>HelmFeature</code> — они короче
+            и не требуют явного <code>.store</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+StateStore&lt;S, E&gt; <span class="nm">get</span> dispatchTarget =&gt; store;</span>
+            <p>Реализация абстрактного геттера, требуемого миксином <code>DispatchProxy</code> — весь
+            dispatch-API этого класса даёт именно миксин.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+S <span class="nm">get</span> value =&gt; store.state;
+S <span class="nm">get</span> state =&gt; store.state;</span>
+            <p>Синхронное чтение без подписки. <code>value</code> — реализация контракта
+            <code>ValueListenable</code>; <code>state</code> — алиас для симметрии со старым API/докстрингами.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+<span class="kw">void</span> <span class="nm">dispose</span>() {
+  _unsubscribe();
+  store.close();
+  <span class="kw">super</span>.dispose();
+}</span>
+            <p>Отписывается от Store и <b>закрывает</b> его. Вызывается <code>HelmFeature</code> при последнем
+            <code>release()</code> (если <code>autoDispose</code>) или при явном <code>HelmFeature.dispose()</code> —
+            вручную звать не нужно.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- HELM FEATURE -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="helm_feature">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>helm_feature.dart</h2>
+        <span class="file-path">lib/src/flutter/helm_feature.dart</span>
+      </div>
+      <p class="file-role">Самый крупный и центральный файл Flutter-моста — глобально адресуемый ленивый токен
+      фичи и вся инфраструктура автоматического трекинга зависимостей для <code>HelmComputed</code>.</p>
+
+      <div class="component" id="HelmFeatureHandle">
+        <div class="component-head"><span class="badge iface">interface</span><span class="component-name">HelmFeatureHandle</span></div>
+        <p class="component-tagline">Непараметризованный контракт токена фичи — минимум, нужный HelmComputed, чтобы держать чужую фичу живой и слушать её изменения, не зная её конкретных S/E.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">Listenable <span class="nm">acquireListenable</span>();</span>
+            <p>Как <code>HelmFeature.acquire</code>, но суженный до <code>Listenable</code>. Возможно, потому
+            что <code>HelmController</code> и так уже <code>Listenable</code> — сужение типа до того, что реально
+            нужно вызывающей стороне, без <code>dynamic</code>/приведений типов.</p>
+          </div>
+          <div class="member"><span class="sig"><span class="kw">void</span> <span class="nm">release</span>();</span><p>См. <code>HelmFeature.release</code>.</p></div>
+          <div class="member"><span class="sig">Listenable <span class="nm">get</span> lifecycle;</span><p>Стабильный (не пересоздаётся) Listenable, оповещающий о замене внутреннего контроллера.</p></div>
+          <div class="member"><span class="sig">Listenable <span class="nm">get</span> currentListenable;</span><p>Актуальный Listenable прямо сейчас, без изменения refCount.</p></div>
+        </div>
+      </div>
+
+      <div class="component" id="dependencyTrackers">
+        <div class="component-head"><span class="badge fn">module-level · internal</span><span class="component-name">_dependencyTrackers, trackHelmDependencies</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">final</span> _dependencyTrackers = &lt;void Function(HelmFeatureHandle)&gt;[];</span>
+            <p>Стек активных трекеров зависимостей для <code>HelmComputed</code>. Не для использования в коде
+            приложения — только через <code>trackHelmDependencies</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">T <span class="nm">trackHelmDependencies</span>&lt;T&gt;(T Function() body, void Function(HelmFeatureHandle) onRead)</span>
+            <p>Выполняет <code>body</code>, сообщая через <code>onRead</code> о каждом обращении к
+            <code>feature.value</code> любой <code>HelmFeature</code> внутри <code>body</code> — так
+            <code>HelmComputed</code> узнаёт свои зависимости <b>автоматически</b>, без ручного перечисления.
+            Трекеры вкладываются стеком: вложенный пересчёт отслеживается независимо от внешнего (<code>try/finally</code>
+            вокруг <code>add</code>/<code>removeLast</code> гарантирует корректную очистку стека даже при исключении внутри <code>body</code>).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="_FeatureLifecycle">
+        <div class="component-head"><span class="badge class">final class · internal</span><span class="component-name">_FeatureLifecycle</span> extends ChangeNotifier</div>
+        <div class="card">
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">bump</span>() =&gt; notifyListeners();</span>
+            <p>Внутренний стабильный уведомитель о замене контроллера фичи. Живёт всё время жизни
+            <code>HelmFeature</code> (в отличие от самого <code>HelmController</code>, который пересоздаётся) —
+            безопасно подписаться один раз в <code>initState</code>/конструкторе и не переподписываться заново.</p>
+          </div>
+        </div>
+      </div>
+
+      <hr class="sep">
+
+      <div class="component" id="HelmFeature">
+        <div class="component-head"><span class="badge class">final class</span><span class="component-name">HelmFeature&lt;S, E&gt;</span> <span class="badge mixin">with DispatchProxy</span> <span class="badge iface">implements HelmFeatureHandle</span></div>
+        <p class="component-tagline">Глобально адресуемый токен фичи — состояние доступно откуда угодно без обхода дерева виджетов, InheritedWidget и кодогенерации.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">HelmFeature(StateStore&lt;S, E&gt; Function() create, {onEffect, autoDispose = false});</span>
+            <p><code>Store</code> создаётся <b>лениво</b> при первом обращении и живёт синглтоном на время жизни
+            приложения — либо до последнего снятого слушателя, если <code>autoDispose</code>.</p>
+          </div>
+          <div class="member">
+            <span class="label">autoDispose (поле, по умолчанию false)</span>
+            <p><code>false</code> — фича живёт как глобальный singleton (корзина, авторизация, кэш). <code>true</code> —
+            Store закрывается автоматически, когда не осталось ни одного слушателя (HelmBuilder/Selector/Listener/listen).
+            Для состояния одного экрана.</p>
+            <div class="note warn">Забытый вызов функции отписки <code>listen</code> (или непарный
+            <code>acquire</code>/<code>release</code>) держит Store живым — это осознанный предохранитель от
+            use-after-dispose, а не "тихая" утечка. См. <code>debugActiveFeatures</code>, чтобы находить такие
+            случаи в тестах.</div>
+          </div>
+          <div class="member">
+            <span class="label">внедрение зависимостей</span>
+            <p>Единственный официальный механизм подмены реализации — <code>overrideWith</code> прямо на
+            токене: подходит и для тестов (мок вместо реального API), и для конфигурации по окружениям.
+            Подмены образуют настоящий стек — см. докстринг <code>overrideWith</code> ниже.</p>
+          </div>
+
+          <div class="member">
+            <span class="label">поля</span>
+            <span class="sig"><span class="ty">StateStore&lt;S, E&gt; Function()</span> _factory;              <span class="kw">// текущая активная фабрика</span>
+<span class="ty">final</span> _overrideStack = &lt;...Function()&gt;[];   <span class="kw">// стек вытесненных overrideWith</span>
+<span class="ty">final</span> void Function(E)? onEffect;
+<span class="ty">final</span> bool autoDispose;
+HelmController&lt;S, E&gt;? _controller;
+<span class="ty">int</span> _refCount = 0;
+<span class="ty">void Function()?</span> _effectUnsubscribe;
+<span class="ty">final</span> _lifecycle = _FeatureLifecycle();
+<span class="kw">static final</span> _debugActiveFeatures = &lt;HelmFeature&gt;{};</span>
+          </div>
+
+          <div class="member">
+            <span class="sig"><span class="kw">static</span> Set&lt;HelmFeature&gt; <span class="nm">get</span> debugActiveFeatures</span>
+            <p>Реестр всех <code>HelmFeature</code> с активным (созданным) Store — <b>только в debug-режиме</b>
+            (мутации обёрнуты в <code>assert</code>, поэтому в release не стоят ничего). Инструмент диагностики
+            утечек: фича, которая должна была закрыться (<code>autoDispose: true</code>, последний
+            <code>release()</code> вызван), но осталась в этом множестве — сигнал забытого
+            <code>acquire()</code>/<code>listen()</code> без парного снятия. Возвращает неизменяемый снимок.</p>
+            <p><span class="label">типовое применение</span> <code>tearDown(() =&gt; expect(HelmFeature.debugActiveFeatures, isEmpty))</code>
+            ловит забытый <code>dispose()</code>/<code>release()</code> раньше, чем это станет проблемой в проде.</p>
+          </div>
+
+          <div class="member">
+            <span class="sig">HelmController&lt;S, E&gt; <span class="nm">get</span> _ctrl <span class="kw">// private</span></span>
+            <p>Ленивый геттер-конструктор: если контроллер уже есть — возвращает его; иначе создаёт
+            <code>HelmController(_factory())</code>, подписывает <code>onEffect</code> (если задан) на
+            <code>store.addOnEffect</code>, регистрирует фичу в <code>_debugActiveFeatures</code> (debug-only) и
+            сохраняет как <code>_controller</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+StateStore&lt;S, E&gt; <span class="nm">get</span> dispatchTarget =&gt; _ctrl.store;</span>
+            <p>Реализация геттера, требуемого <code>DispatchProxy</code> — весь dispatch-API фичи даёт этот
+            миксин, работая через актуальный <code>_ctrl.store</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">S <span class="nm">get</span> value</span>
+            <p>Текущее состояние — синхронное чтение без подписки и без context. Создаёт Store при первом
+            обращении. <b>Вызванный внутри compute-функции HelmComputed</b>, дополнительно регистрирует эту
+            фичу как её зависимость (проверка <code>_dependencyTrackers.isNotEmpty</code> и вызов верхнего
+            трекера стека) — это и есть механизм автотрекинга зависимостей.</p>
+          </div>
+          <div class="member">
+            <span class="sig">bool <span class="nm">get</span> isActive =&gt; _controller != null;</span>
+            <p><code>true</code>, если Store фичи создан и активен.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+Listenable <span class="nm">get</span> lifecycle =&gt; _lifecycle;</span>
+            <p>Уведомляет о замене внутреннего <code>HelmController</code> — срабатывает на
+            <code>overrideWith</code> и на принудительный <code>dispose</code>. В отличие от самого
+            <code>HelmController</code>, не пересоздаётся — безопасно подписаться один раз. Все биндинги моста
+            подписываются на него автоматически — уже смонтированные виджеты сами переподключаются к новому
+            контроллеру.</p>
+          </div>
+          <div class="member">
+            <span class="sig">HelmController&lt;S, E&gt; <span class="nm">get</span> currentController =&gt; _ctrl;
+@override
+Listenable <span class="nm">get</span> currentListenable =&gt; _ctrl;</span>
+            <p>Актуальный контроллер прямо сейчас, без изменения refCount. Создаёт Store, если он ещё не создан.</p>
+          </div>
+
+          <div class="member">
+            <span class="sig"><span class="ty">void Function()</span> <span class="nm">listen</span>(void Function(S state) onChange)</span>
+            <p>Подписка на изменения состояния в обход виджетов — участвует в том же подсчёте ссылок, что и
+            <code>HelmBuilder</code>/<code>HelmSelector</code>/<code>HelmListener</code>: вызывает
+            <code>acquire</code>, а вызов возвращённой функции — <code>release</code>. Для фичи с
+            <code>autoDispose: true</code> достаточно честно вызвать её — Store закроется, если больше никто
+            его не держит.</p>
+            <p>Переподключается к новому <code>HelmController</code> после <code>overrideWith</code>/принудительного
+            <code>dispose</code> так же, как <code>HelmBuilder</code>/<code>feature.watch()</code> — подписывается
+            на <code>lifecycle</code> и меняет слушателя на актуальный контроллер через <code>swapController</code>.
+            Возвращает функцию отписки, безопасную к повторному вызову (idempotent через флаг <code>released</code>).</p>
+          </div>
+
+          <h4 style="margin-top:22px; font-size:15px; color:var(--ink-soft);">Внутреннее: для HelmBuilder/HelmSelector/HelmListener/HelmComputed</h4>
+
+          <div class="member">
+            <span class="sig">HelmController&lt;S, E&gt; <span class="nm">acquire</span>()</span>
+            <p>Регистрирует нового слушателя (<code>_refCount++</code>) и возвращает актуальный контроллер. Не
+            для вызова в коде команд/сервисов — используй <code>value</code>/<code>dispatch</code>/<code>listen</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+Listenable <span class="nm">acquireListenable</span>() =&gt; acquire();</span>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+<span class="kw">void</span> <span class="nm">release</span>()</span>
+            <p>Снимает регистрацию слушателя. При <code>autoDispose: true</code> и обнулении счётчика —
+            закрывает Store (<code>_disposeInternal</code>). Счётчик независим от того, сколько раз
+            пересоздавался <code>HelmController</code> — принудительный <code>dispose</code>/<code>overrideWith</code>
+            его не сбрасывает.</p>
+            <div class="note warn">Вызов без парного <code>acquire</code>/<code>acquireListenable</code>/<code>listen</code> —
+            ошибка использования: в debug бросает <code>AssertionError</code>, в release — no-op.</div>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">dispose</span>() =&gt; _disposeInternal();</span>
+            <p>Принудительно закрывает Store прямо сейчас, независимо от <code>autoDispose</code>/refCount
+            (например, при логауте для фичи-синглтона). Следующее обращение пересоздаст Store через текущую
+            фабрику. Уже смонтированные биндинги узнают об этом через <code>lifecycle</code> и сами
+            переподключатся к новому контроллеру при следующем обращении.</p>
+          </div>
+
+          <div class="member">
+            <span class="sig"><span class="ty">void Function()</span> <span class="nm">overrideWith</span>(StateStore&lt;S, E&gt; Function() create)</span>
+            <p>Единственный официальный способ внедрения зависимостей: временно подменяет фабрику, из которой
+            <code>HelmFeature</code> лениво создаёт свой Store.</p>
+            <p><span class="label">настоящий стек подмен</span> Вложенные <code>overrideWith</code> образуют
+            настоящий стек (<code>_overrideStack</code>): каждый вызов кладёт текущую фабрику наверх стека перед
+            подменой, а восстановление снимает её обратно. Пока восстановления вызываются в порядке LIFO
+            (обычный случай — <code>addTearDown</code> в обратном порядке регистрации), поведение то же, что и
+            при простом "запомнить предыдущую фабрику".</p>
+            <div class="note warn">Восстановление НЕ в порядке LIFO (например, внешний <code>overrideWith</code>
+            восстановлен раньше вложенного) — ошибка использования: в debug бросает предупреждение через
+            <code>assert</code> (сравнивая <code>_overrideStack.length</code> с ожидаемой длиной, зафиксированной
+            в момент подмены), в release по-прежнему безопасно (снимает верхушку стека, не роняет приложение),
+            но итоговая активная фабрика может оказаться не той, что вызывающий код ожидал.</div>
+            <p>Возвращает функцию восстановления, <b>идемпотентную</b>: повторный вызов (например, случайно и в
+            <code>tearDown</code>, и вручную) — no-op, а не лишнее пересоздание Store и повторный
+            <code>lifecycle.bump()</code> для всех биндингов.</p>
+          </div>
+
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_disposeInternal</span>() <span class="kw">// private</span></span>
+            <p>Отписывает <code>_effectUnsubscribe</code>, обнуляет <code>_controller</code>, снимает фичу из
+            <code>_debugActiveFeatures</code> (debug-only).</p>
+            <div class="note warn"><b>Порядок принципиален:</b> сначала <code>_lifecycle.bump()</code> — держатели
+            (<code>swapController</code> в HelmBuilder/watch/select/effect/listen/HelmComputed) переподключаются
+            к новому контроллеру и снимают listener со старого, пока тот <b>ЕЩЁ жив</b>. <code>dispose()</code>
+            старого <code>HelmController</code> выполняется только после этого. В обратном порядке держатели
+            вызывали бы <code>removeListener</code> на уже disposed <code>ChangeNotifier</code> — в debug-режиме
+            Flutter это ассерт (<code>_debugAssertNotDisposed</code>) при каждом <code>overrideWith</code>/принудительном
+            <code>dispose</code> на смонтированном биндинге.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- HELM BUILDER -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="helm_builder">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>helm_builder.dart</h2>
+        <span class="file-path">lib/src/flutter/helm_builder.dart</span>
+      </div>
+      <p class="file-role">Классические виджеты-обёртки в стиле <code>BlocBuilder</code>/<code>BlocSelector</code>/<code>BlocListener</code>/<code>BlocConsumer</code>.</p>
+
+      <div class="component" id="_FeatureBindingState">
+        <div class="component-head"><span class="badge mixin">mixin</span><span class="component-name">_FeatureBindingState&lt;S, E, W extends StatefulWidget&gt;</span> on State&lt;W&gt;</div>
+        <p class="component-tagline">Общая часть привязки State к HelmFeature: acquire в initState, подписка на lifecycle, смена фичи в didUpdateWidget, release в dispose.</p>
+        <div class="card">
+          <div class="member">
+            <p>Устраняет дублирование этого скелета между <code>HelmBuilder</code>/<code>HelmSelector</code>/<code>HelmListener</code> —
+            они отличаются только тем, что вешают на контроллер поверх него (<code>onBind</code>/<code>onUnbind</code>).
+            <code>didUpdateWidget</code> реализован здесь один раз: каждому конкретному <code>State</code>
+            достаточно сообщить, как достать <code>HelmFeature</code> из старого виджета (<code>featureOf</code>).</p>
+          </div>
+          <div class="member">
+            <span class="sig">HelmFeature&lt;S, E&gt; <span class="nm">get</span> feature;                     <span class="kw">// abstract</span>
+HelmFeature&lt;S, E&gt; <span class="nm">featureOf</span>(W widget);                <span class="kw">// abstract</span>
+<span class="kw">late</span> HelmController&lt;S, E&gt; controller;
+bool <span class="nm">get</span> rebuildsOnControllerSwap =&gt; <span class="kw">true</span>;   <span class="kw">// override в HelmListener</span></span>
+            <p><code>rebuildsOnControllerSwap</code>: по умолчанию <code>true</code> — смена контроллера вызывает
+            <code>setState</code>. <code>HelmListener</code> переопределяет в <code>false</code>: его
+            <code>build()</code> не зависит от состояния фичи.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+<span class="kw">void</span> <span class="nm">initState</span>() {
+  controller = feature.acquire();
+  feature.lifecycle.addListener(_onLifecycle);
+  onBind(controller);
+}</span>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_onLifecycle</span>()</span>
+            <p>Через <code>swapController</code> переподключается к свежему контроллеру, если он реально
+            сменился (и виджет ещё смонтирован). Если <code>rebuildsOnControllerSwap</code> — вызывает
+            <code>setState</code>, иначе просто присваивает поле без ребилда.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+<span class="kw">void</span> <span class="nm">didUpdateWidget</span>(covariant W oldWidget)</span>
+            <p>Сравнивает <code>oldWidget.feature</code> с актуальным <code>feature</code> по
+            <code>identical</code>; при смене — <code>rebindFeature(oldFeature)</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">rebindFeature</span>(HelmFeature&lt;S, E&gt; oldFeature)</span>
+            <p>Вызывается, когда сам токен <code>HelmFeature</code> сменился на другой объект (виджету передали
+            другую фичу): отписывается от старой, <code>onUnbind</code>, <code>release()</code> старой,
+            <code>acquire()</code> новой, <code>onBind</code>, подписка на новую <code>lifecycle</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+<span class="kw">void</span> <span class="nm">dispose</span>()</span>
+            <p>Снимает lifecycle-слушателя, <code>onUnbind</code>, <code>feature.release()</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">onBind</span>(HelmController&lt;S, E&gt; controller);     <span class="kw">// abstract</span>
+<span class="kw">void</span> <span class="nm">onUnbind</span>(HelmController&lt;S, E&gt; controller);   <span class="kw">// abstract</span></span>
+            <p>Навесить/снять то, что нужно этому конкретному виджету, на контроллер.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="HelmBuilder">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">HelmBuilder&lt;S, E&gt;</span> extends StatefulWidget</div>
+        <p class="component-tagline">Аналог BlocBuilder/Consumer — перестраивает builder при каждом изменении состояния через штатный ValueListenableBuilder.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">HelmBuilder(feature, {required builder});   <span class="kw">// builder: (context, S state) =&gt; Widget</span></span>
+            <p>Подписывается на <b>весь</b> <code>S</code> — для ребилда по части состояния используй
+            <code>HelmSelector</code>; для <code>S == Loadable&lt;T&gt;</code> — <code>HelmLoadableBuilder</code>.
+            Переподключается к новому контроллеру автоматически после <code>overrideWith</code>/принудительного
+            <code>dispose</code> фичи.</p>
+          </div>
+          <div class="member">
+            <span class="label">_HelmBuilderState</span>
+            <p><code>onBind</code>/<code>onUnbind</code> — пустые: <code>ValueListenableBuilder</code> внутри
+            <code>build()</code> сам управляет подпиской при смене <code>listenable</code>, навешивать/снимать
+            здесь нечего. <code>build()</code> просто рендерит <code>ValueListenableBuilder&lt;S&gt;(valueListenable: controller, ...)</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="HelmSelector">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">HelmSelector&lt;S, E, R&gt;</span> extends StatefulWidget</div>
+        <p class="component-tagline">Аналог BlocSelector/Selector — подписывается на feature, но перестраивается только когда результат selector реально изменился (==).</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">HelmSelector(feature, {required selector, required builder});
+<span class="kw">// selector: R Function(S state); builder: (context, R value) =&gt; Widget</span></span>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">onBind</span>(controller) {
+  controller.addListener(_onChange);
+  _value = widget.selector(controller.state);
+}
+<span class="kw">void</span> <span class="nm">onUnbind</span>(controller) =&gt; controller.removeListener(_onChange);
+<span class="kw">void</span> <span class="nm">_onChange</span>() {
+  <span class="kw">final</span> next = widget.selector(controller.state);
+  <span class="kw">if</span> (next != _value &amp;&amp; mounted) setState(() =&gt; _value = next);
+}</span>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+Widget <span class="nm">build</span>(BuildContext context)</span>
+            <p>Перед рендером ещё раз пересчитывает <code>next = widget.selector(controller.state)</code> и
+            обновляет <code>_value</code>, если он отличается — <b>без</b> вызова <code>setState</code>
+            (мы уже внутри build). Это защита от случая, когда <code>widget.selector</code> изменился между
+            билдами (например, замкнул новую переменную из внешнего build()), даже если ни feature, ни state с
+            прошлого раза не менялись — без этого пересчёта UI показывал бы устаревшее <code>_value</code>
+            вплоть до следующего изменения состояния фичи. Тот же приём, что и в
+            <code>HelmFeatureReactive.select → resync()</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="HelmListener">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">HelmListener&lt;S, E&gt;</span> extends StatefulWidget</div>
+        <p class="component-tagline">Аналог BlocListener — подписывается на side-эффекты фичи и вызывает listener при каждом, ничего не перестраивая.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">HelmListener(feature, {required listener, required child});
+<span class="kw">// listener: (context, E effect) =&gt; void</span></span>
+            <p>Предпочтительнее, чем <code>HelmFeature.onEffect</code>, когда реакция актуальна только для
+            части дерева.</p>
+          </div>
+          <div class="member">
+            <span class="sig">bool <span class="nm">get</span> rebuildsOnControllerSwap =&gt; <span class="kw">false</span>;</span>
+            <p><code>build()</code> не читает состояние фичи — смена контроллера не требует ребилда, только
+            переподписки на эффекты.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">onBind</span>(controller) {
+  _unsubscribeEffects = controller.store.addOnEffect((effect) =&gt; widget.listener(context, effect));
+}
+<span class="kw">void</span> <span class="nm">onUnbind</span>(controller) {
+  _unsubscribeEffects?.call();
+  _unsubscribeEffects = <span class="kw">null</span>;
+}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="HelmConsumer">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">HelmConsumer&lt;S, E&gt;</span> extends StatelessWidget</div>
+        <p class="component-tagline">Комбинация HelmListener + HelmBuilder — как BlocConsumer.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">Widget <span class="nm">build</span>(context) =&gt; HelmListener&lt;S, E&gt;(
+  feature, listener: listener,
+  child: HelmBuilder&lt;S, E&gt;(feature, builder: builder),
+);</span>
+            <p>Просто композиция: один виджет реагирует и на эффекты, и на состояние, без ручной вложенности
+            двух обёрток.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- HELM COMPUTED -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="helm_computed">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>helm_computed.dart</h2>
+        <span class="file-path">lib/src/flutter/helm_computed.dart</span>
+      </div>
+      <p class="file-role">Реактивно пересчитываемое значение из произвольного числа фич — аналог нескольких
+      <code>ref.watch(...)</code> в одном Riverpod-провайдере, но как обычный <code>Listenable</code>, без
+      ref/context/кодогенерации.</p>
+
+      <div class="component" id="HelmComputed">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">HelmComputed&lt;T&gt;</span> extends ChangeNotifier</div>
+        <div class="card">
+          <div class="member">
+            <span class="label">автоматический трекинг зависимостей</span>
+            <p>Зависимости не перечисляются вручную — определяются автоматически по факту обращения к
+            <code>feature.value</code> внутри <code>compute</code>: лишняя зависимость — это просто ещё один
+            <code>feature.value</code> в той же функции, без фабрики под конкретное число фич; зависимости
+            могут быть динамическими/условными — набор подписок пересчитывается на каждый re-run;
+            <code>acquire</code>/<code>release</code> зависимых фич полностью автоматизированы.</p>
+            <div class="note warn">Отслеживается только чтение через <code>feature.value</code> (в т.ч.
+            косвенно — <code>feature.read()</code>, алиас на тот же геттер). Если код внутри <code>compute</code>
+            как-то иначе достаёт состояние фичи в обход <code>value</code> — такая зависимость трекером не
+            увидится.</div>
+          </div>
+          <div class="member">
+            <span class="sig">HelmComputed(this._compute, {equals, this.onError})
+    : _equals = equals ?? defaultEquals&lt;T&gt; {
+  _value = _evaluate();
+}</span>
+            <p>Не предназначен для создания вручную в <code>build()</code> — используй <code>helmCompute</code>
+            и держи результат в <code>late final</code> поле состояния либо top-level.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="ty">final</span> void Function(Object, StackTrace)? onError;</span>
+            <p>Обработчик исключений из <code>_compute</code>. Без него исключение пробрасывается наружу как
+            обычно (конструктор бросает; <code>_recompute</code> бросает из колбэка <code>addListener</code>).
+            Если задан — <code>_recompute</code> вызывает его и оставляет <code>value</code> равным последнему
+            успешному значению вместо падения; зависимости, отслеженные до точки исключения, всё равно
+            синхронизируются — реакция на дальнейшие изменения не теряется.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="ty">final</span> _deps = &lt;HelmFeatureHandle, Listenable&gt;{};
+bool _recomputing = <span class="kw">false</span>;</span>
+            <p><code>_deps</code> — активные зависимости: токен фичи → её сужённый Listenable.
+            <code>_recomputing</code> — защита от реентрантного вызова <code>_recompute</code> изнутри самого
+            себя (например, если <code>_compute</code> синхронно триггерит изменение одной из собственных
+            зависимостей). Без гарда это стек-оверфлоу; с ним — внутренний вызов просто не выполняет вложенный
+            пересчёт (внешний вызов и так пересчитает актуальное значение по завершении).</p>
+          </div>
+          <div class="member">
+            <span class="sig">T <span class="nm">get</span> value =&gt; _value;</span>
+            <p>Текущее вычисленное значение — синхронное чтение без подписки.</p>
+          </div>
+          <div class="member">
+            <span class="sig">T <span class="nm">_evaluate</span>() <span class="kw">// private, только из конструктора</span></span>
+            <p>Прогоняет <code>_compute</code> через <code>trackHelmDependencies</code>, собирая множество
+            прочитанных фич, затем <code>_syncDependencies(tracked)</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_syncDependencies</span>(Set&lt;HelmFeatureHandle&gt; tracked)</span>
+            <p>Убирает из <code>_deps</code> те фичи, что больше не встретились в <code>tracked</code> (снимает
+            слушателя, снимает lifecycle-слушателя, зовёт <code>release()</code>); добавляет новые: для каждой
+            фичи из <code>tracked</code>, которой ещё нет в <code>_deps</code>, вызывает
+            <code>acquireListenable()</code>, вешает <code>_recompute</code> и <code>_onDependencyLifecycle</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_onDependencyLifecycle</span>()</span>
+            <p>Срабатывает, когда у одной из зависимостей заменился внутренний контроллер — переподписывается
+            на актуальный <code>Listenable</code> той же фичи (сравнивая <code>currentListenable</code> с
+            сохранённым по <code>identical</code>) и пересчитывает: новый Store мог стартовать с другого
+            состояния.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_recompute</span>()</span>
+            <p>Под защитой <code>_recomputing</code>: прогоняет <code>_compute</code> через трекер; при
+            исключении — синхронизирует зависимости до точки исключения, затем либо пробрасывает исключение
+            дальше (если <code>onError</code> не задан), либо вызывает <code>onError</code> и выходит. При
+            успехе — синхронизирует зависимости, и если <code>!_equals(next, _value)</code> — обновляет
+            значение и зовёт <code>notifyListeners()</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+<span class="kw">void</span> <span class="nm">dispose</span>()</span>
+            <p>Отписывается и освобождает (<code>release()</code>) все зависимости, очищает <code>_deps</code>.</p>
+          </div>
+        </div>
+        <div class="note tip">
+          <b>Почему <code>_evaluate</code> и <code>_recompute</code> не объединены в один метод.</b>
+          Оба делают "track + sync зависимостей", но с разной семантикой ошибок: <code>_evaluate</code>
+          (вызывается только из конструктора) НЕ синхронизирует зависимости, если <code>_compute</code> бросил
+          исключение — иначе частично отслеженные фичи оказались бы <code>acquire()</code>-нуты без единого
+          шанса на <code>release()</code> (конструктор не вернул объект → <code>dispose</code> никогда не
+          вызовется → утечка refCount). <code>_recompute</code> же обязан синхронизировать зависимости даже при
+          ошибке — объект уже живёт, и дальнейшие изменения уже отслеженных зависимостей не должны потеряться.
+        </div>
+      </div>
+
+      <div class="component" id="helmCompute">
+        <div class="component-head"><span class="badge fn">function</span><span class="component-name">helmCompute&lt;T&gt;(compute, {equals, onError})</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">HelmComputed&lt;T&gt; <span class="nm">helmCompute</span>&lt;T&gt;(T Function() compute, {equals, onError}) =&gt;
+    HelmComputed&lt;T&gt;(compute, equals: equals, onError: onError);</span>
+            <p>Короткая фабрика — без явного <code>HelmComputed&lt;T&gt;(...)</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- HELM LOADABLE -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="helm_loadable">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>helm_loadable.dart</h2>
+        <span class="file-path">lib/src/flutter/helm_loadable.dart</span>
+      </div>
+      <p class="file-role">Готовый <code>.when()</code>-стиль ветвления и сахар диспатча для фич на <code>Loadable&lt;T&gt;</code>.</p>
+
+      <div class="component" id="HelmLoadableBuilder">
+        <div class="component-head"><span class="badge class">class</span><span class="component-name">HelmLoadableBuilder&lt;T, E&gt;</span> extends StatelessWidget</div>
+        <p class="component-tagline">Аналог .when() из AsyncValue, но подключённый к живому HelmFeature.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">HelmLoadableBuilder(HelmFeature&lt;Loadable&lt;T&gt;, E&gt; feature, {
+  required data,     <span class="kw">// (context, T value) =&gt; Widget</span>
+  required loading,  <span class="kw">// (context, T? previous) =&gt; Widget</span>
+  required error,    <span class="kw">// (context, Object, StackTrace?, T? previous) =&gt; Widget</span>
+  idle,              <span class="kw">// (context) =&gt; Widget, опционально</span>
+})</span>
+            <p><code>previous</code> в <code>loading</code>/<code>error</code> — последнее успешно загруженное
+            значение: можно показать старые данные поверх спиннера вместо пустого экрана.
+            <code>idle</code> — ресурс ещё не запрашивался; по умолчанию рисуется как <code>loading</code> с
+            <code>previous: null</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">Widget <span class="nm">build</span>(context) =&gt; HelmBuilder&lt;Loadable&lt;T&gt;, E&gt;(
+  feature,
+  builder: (context, state) =&gt; state.when(idle: ..., loading: ..., data: ..., error: ...),
+);</span>
+            <p>Просто оборачивает <code>HelmBuilder</code> и делегирует ветвление методу <code>Loadable.when</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="HelmFeatureLoadable">
+        <div class="component-head"><span class="badge ext">extension</span><span class="component-name">HelmFeatureLoadable&lt;T, E&gt;</span> on HelmFeature&lt;Loadable&lt;T&gt;, E&gt;</div>
+        <p class="component-tagline">Сахар для фич, где состояние — Loadable&lt;T&gt; целиком. Экономит dispatch(LoadCommand(...)) на каждом экране.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">Future&lt;DispatchResult&lt;Loadable&lt;T&gt;&gt;&gt; <span class="nm">load</span>(Future&lt;T&gt; Function() load) =&gt;
+    dispatch(LoadCommand&lt;T&gt;(load));</span>
+            <p>Запускает <code>LoadCommand</code> — one-shot загрузка <code>loading → data / error</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">watchStream</span>(Stream&lt;T&gt; Function() source) =&gt;
+    dispatchStream(WatchCommand&lt;T&gt;(source));</span>
+            <p>Подписывается на внешний <code>Stream&lt;T&gt;</code> через <code>WatchCommand</code> — каждое
+            значение сразу становится <code>Loadable.data</code>.</p>
+          </div>
+        </div>
+        <div class="note">Работает только когда <code>S</code> фичи — <code>Loadable&lt;T&gt;</code> (проверяется
+        компилятором благодаря ограничению extension) — для составных состояний, где <code>Loadable</code> лишь
+        одно из полей, диспатчи обычной командой, читающей/пишущей нужное поле через <code>copyWith</code>.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- HELM REACTIVE -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="helm_reactive">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>helm_reactive.dart</h2>
+        <span class="file-path">lib/src/flutter/helm_reactive.dart</span>
+      </div>
+      <p class="file-role">Самый механически изощрённый файл моста: hooks-подобный синтаксис
+      <code>feature.watch()</code>/<code>.select()</code>/<code>.effect()</code> прямо в <code>build()</code> —
+      без явного <code>HelmBuilder</code>/<code>HelmSelector</code>/<code>HelmListener</code> вокруг, и <b>без</b>
+      проблемы "порядка вызовов хуков" классических hooks-библиотек.</p>
+
+      <div class="component" id="HelmWidget">
+        <div class="component-head"><span class="badge class">abstract class</span><span class="component-name">HelmWidget</span> extends StatelessWidget</div>
+        <div class="card"><div class="member">
+          <span class="sig">@override
+StatelessElement <span class="nm">createElement</span>() =&gt; _StatelessHelmElement(<span class="kw">this</span>);</span>
+          <p>Базовый класс для виджетов, использующих <code>feature.watch()</code>/<code>.select()</code>/<code>.effect()</code>.
+          Единственное отличие от обычного <code>StatelessWidget</code> — подмешивает
+          <code>HelmReactiveElement</code> в свой <code>Element</code> через кастомный <code>createElement</code>.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="StatefulHelmWidget">
+        <div class="component-head"><span class="badge class">abstract class</span><span class="component-name">StatefulHelmWidget</span> extends StatefulWidget</div>
+        <div class="card"><div class="member">
+          <p>Как <code>HelmWidget</code>, но со <code>State</code> — когда, помимо <code>feature.watch()</code>,
+          нужен собственный <code>setState</code>/<code>initState</code>/контроллеры анимации. Тоже подмешивает
+          <code>HelmReactiveElement</code> в свой <code>_StatefulHelmElement</code>.</p>
+        </div></div>
+      </div>
+
+      <div class="component" id="_BindingKind">
+        <div class="component-head"><span class="badge enum">enum · internal</span><span class="component-name">_BindingKind</span></div>
+        <div class="card"><div class="member"><p><code>{ watch, select, effect }</code> — три вида биндингов.</p></div></div>
+      </div>
+
+      <div class="component" id="_BindingKey">
+        <div class="component-head"><span class="badge class">@immutable class · internal</span><span class="component-name">_BindingKey</span></div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">_BindingKey(this.feature, this.kind, this.explicitKey);</span>
+            <p><code>feature</code> — сам токен <code>HelmFeature</code>, сравнивается по <b>идентичности</b>,
+            не по <code>==</code>. <code>explicitKey</code> — различает несколько биндингов одного вида на
+            одной фиче в одном виджете (см. <code>HelmFeatureReactive.select</code>).</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+bool <span class="nm">operator</span> ==(Object other) =&gt;
+    other is _BindingKey &amp;&amp;
+    identical(other.feature, feature) &amp;&amp;
+    other.kind == kind &amp;&amp;
+    other.explicitKey == explicitKey;
+@override
+<span class="ty">int</span> <span class="nm">get</span> hashCode =&gt; Object.hash(identityHashCode(feature), kind, explicitKey);</span>
+            <p>Ключ для <code>Map&lt;_BindingKey, _Binding&gt;</code> — хеш строится на <code>identityHashCode</code>
+            фичи, а не на её <code>hashCode</code>, симметрично сравнению <code>identical</code> в <code>==</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="_Binding">
+        <div class="component-head"><span class="badge iface">interface · internal</span><span class="component-name">_Binding</span></div>
+        <div class="card"><div class="member"><span class="sig"><span class="kw">void</span> <span class="nm">dispose</span>();</span></div></div>
+      </div>
+
+      <div class="component" id="_FeatureBinding">
+        <div class="component-head"><span class="badge class">abstract class · internal</span><span class="component-name">_FeatureBinding&lt;S, E&gt;</span> <span class="badge iface">implements _Binding</span></div>
+        <p class="component-tagline">Общий скелет для _WatchBinding/_SelectBinding/_EffectBinding.</p>
+        <div class="card">
+          <div class="member">
+            <p>acquire фичи, подписка на конкретный вид слушателя (решает подкласс через
+            <code>attachListener</code>/<code>detachListener</code>), переподключение к новому контроллеру после
+            <code>overrideWith</code>/принудительного <code>dispose</code> фичи (<code>_onLifecycle</code>, тот же
+            паттерн <code>swapController</code>, что и в биндингах State), release в <code>dispose</code>.
+            Устраняет тройное дублирование этого скелета между тремя видами биндингов — они отличаются только
+            тем, что именно вешают на контроллер и что делают при его смене (<code>onControllerSwapped</code>).</p>
+          </div>
+          <div class="member">
+            <span class="sig">_FeatureBinding(this.feature) : controller = feature.acquire();
+<span class="kw">void</span> <span class="nm">attachListener</span>(HelmController&lt;S, E&gt; controller);  <span class="kw">// abstract</span>
+<span class="kw">void</span> <span class="nm">detachListener</span>(HelmController&lt;S, E&gt; controller);  <span class="kw">// abstract</span>
+<span class="kw">void</span> <span class="nm">onControllerSwapped</span>() {}                          <span class="kw">// по умолчанию no-op</span></span>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">start</span>()</span>
+            <p>Довершает инициализацию — вешает слушатель и подписывается на <code>feature.lifecycle</code>.
+            Вызывается конструктором подкласса <b>ПОСЛЕ</b> того, как он проинициализировал собственные поля
+            (например, закэшированное значение selector'а): иначе виртуальный вызов <code>attachListener</code>
+            из тела конструктора базового класса сработал бы раньше, чем эти поля готовы.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_onLifecycle</span>()</span>
+            <p>Через <code>swapController</code> переподключается, если контроллер сменился, затем зовёт
+            <code>onControllerSwapped()</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+<span class="kw">void</span> <span class="nm">dispose</span>()</span>
+            <p><code>detachListener</code>, снятие lifecycle-подписки, <code>feature.release()</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="_WatchBinding">
+        <div class="component-head"><span class="badge class">internal</span><span class="component-name">_WatchBinding&lt;S, E&gt;</span> extends _FeatureBinding</div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">_WatchBinding(super.feature, this._onChanged) { start(); }
+S <span class="nm">get</span> value =&gt; controller.state;</span>
+          </div>
+          <div class="member">
+            <span class="sig">attachListener =&gt; controller.addListener(_onChanged);
+detachListener =&gt; controller.removeListener(_onChanged);
+onControllerSwapped() =&gt; _onChanged();</span>
+            <p>Реализация для полной подписки: любое изменение controller зовёт <code>_onChanged</code>
+            (обычно <code>element.markNeedsBuild</code>). При смене контроллера тоже дёргает
+            <code>_onChanged</code> — новый Store мог стартовать с другого состояния, нужен немедленный ребилд.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="_SelectBinding">
+        <div class="component-head"><span class="badge class">internal</span><span class="component-name">_SelectBinding&lt;S, E, R&gt;</span> extends _FeatureBinding</div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">_SelectBinding(super.feature, this.selector, this._onChanged) {
+  _value = selector(controller.state);
+  start();
+}
+<span class="ty">R Function(S)</span> selector;     <span class="kw">// переприсваивается на каждый вызов select()</span>
+<span class="kw">late</span> R _value;
+R <span class="nm">get</span> value =&gt; _value;</span>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_listener</span>() {
+  <span class="kw">final</span> next = selector(controller.state);
+  <span class="kw">if</span> (next != _value) { _value = next; _onChanged(); }
+}</span>
+            <p>Перестраивает только когда результат селектора реально изменился.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">resync</span>()</span>
+            <p>Синхронно пересчитывает значение по актуальному <code>selector</code> — вызывается сразу после
+            переприсваивания <code>selector</code> в <code>HelmFeatureReactive.select</code>, <b>до</b> возврата
+            значения вызывающей стороне. Без этого, если <code>selector</code> поменялся между билдами (замкнул
+            новую переменную из внешнего build), <code>_value</code> оставался бы устаревшим до следующего
+            изменения состояния фичи. <b>Не</b> вызывает <code>_onChanged</code> — мы уже внутри текущего
+            <code>build()</code>, повторный <code>markNeedsBuild()</code> здесь не нужен.</p>
+          </div>
+          <div class="member">
+            <span class="sig">attachListener =&gt; controller.addListener(_listener);
+detachListener =&gt; controller.removeListener(_listener);
+onControllerSwapped() =&gt; _listener();</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="_EffectBinding">
+        <div class="component-head"><span class="badge class">internal</span><span class="component-name">_EffectBinding&lt;S, E&gt;</span> extends _FeatureBinding</div>
+        <div class="card">
+          <div class="member">
+            <span class="sig">_EffectBinding(super.feature, this.effect) {
+  start();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    <span class="kw">if</span> (_disposed || _initialCallDone) <span class="kw">return</span>;
+    _initialCallDone = <span class="kw">true</span>;
+    effect(controller.state);
+  });
+}</span>
+            <p>Первый вызов — <b>после текущего кадра</b>, а не синхронно во время <code>build()</code>, как и
+            эффекты в hooks-библиотеках.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="ty">void Function(S)</span> effect;   <span class="kw">// переприсваивается на каждый вызов effect()</span>
+bool _disposed = <span class="kw">false</span>;
+bool _initialCallDone = <span class="kw">false</span>;</span>
+            <p><code>_disposed</code> защищает от вызова на уже отвязанном биндинге, если виджет размонтирован
+            до конца кадра (например, навигация pop сразу после push) — без этой проверки callback всё равно
+            выполнился бы поверх уже освобождённых ресурсов.</p>
+            <p><code>_initialCallDone</code> защищает от <b>двойного</b> вызова: если lifecycle фичи сработал
+            (overrideWith/принудительный dispose) раньше, чем успел выполниться post-frame callback,
+            <code>onControllerSwapped</code> уже вызвал <code>effect</code> с актуальным состоянием нового
+            контроллера — сам post-frame callback в этом случае должен стать no-op, а не позвать
+            <code>effect()</code> второй раз тем же кадром с тем же (или уже следующим) состоянием.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_listener</span>() =&gt; effect(controller.state);
+attachListener =&gt; controller.addListener(_listener);
+detachListener =&gt; controller.removeListener(_listener);</span>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+<span class="kw">void</span> <span class="nm">onControllerSwapped</span>() {
+  _initialCallDone = <span class="kw">true</span>;
+  effect(controller.state);
+}
+@override
+<span class="kw">void</span> <span class="nm">dispose</span>() { _disposed = <span class="kw">true</span>; <span class="kw">super</span>.dispose(); }</span>
+          </div>
+        </div>
+      </div>
+
+      <hr class="sep">
+
+      <div class="component" id="HelmReactiveElement">
+        <div class="component-head"><span class="badge mixin">mixin</span><span class="component-name">HelmReactiveElement</span> on ComponentElement</div>
+        <p class="component-tagline">Element-миксин, резолвящий feature.watch()/.select()/.effect().</p>
+        <div class="card">
+          <div class="member">
+            <span class="label">почему без "порядка вызовов", в отличие от классических хуков</span>
+            <p>Классические хуки индексируют состояние по порядковому номеру вызова внутри <code>build()</code> —
+            <code>useState</code> внутри <code>if</code>/цикла ломает всё. Здесь этой проблемы нет: у каждого
+            биндинга уже есть стабильный между билдами ключ — сам объект <code>HelmFeature</code> (обычно
+            top-level final). Биндинги хранятся в <code>Map</code>, поэтому <code>feature.watch()</code> можно
+            звать условно, в цикле, где угодно; единственное, что нужно проговорить явно — <code>Object key</code>
+            при нескольких разных биндингах одного вида на одной фиче в одном виджете.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">static</span> HelmReactiveElement? _current;
+<span class="ty">final</span> Map&lt;_BindingKey, _Binding&gt; _bindings = {};
+<span class="ty">final</span> List&lt;Set&lt;_BindingKey&gt;&gt; _seenStack = [];
+<span class="ty">final</span> List&lt;Set&lt;_BindingKey&gt;&gt; _setPool = [];</span>
+            <p><code>_current</code> — статический указатель на элемент, чей <code>build()</code> выполняется
+            прямо сейчас; через него <code>feature.watch()</code> находит "свой" элемент без явного context.</p>
+            <p><code>_seenStack</code> — стек наборов "увиденных в текущем <code>build()</code>" ключей: один
+            элемент на каждый вложенный/повторный вызов <code>build</code> (устойчивость к
+            <code>reassemble()</code>/hot reload, который может вызвать <code>build()</code> того же
+            <code>Element</code> не строго последовательно).</p>
+            <p><code>_setPool</code> — пул уже использованных (очищенных) наборов для <code>_seenStack</code> —
+            без него каждый <code>build</code> аллоцировал бы новый <code>&lt;_BindingKey&gt;{}</code>. Для
+            виджета, перестраивающегося внутри анимации (60 раз в секунду), это 60 лишних аллокаций в секунду на
+            виджет. Сет из пула переиспользуется между билдами; новый выделяется только при глубокой
+            реентрантности, когда пул пуст.</p>
+          </div>
+          <div class="member">
+            <span class="sig">B <span class="nm">_bindingFor</span>&lt;B extends _Binding&gt;(_BindingKey key, B Function() create)</span>
+            <p>Регистрирует <code>key</code> в верхнем наборе <code>_seenStack</code>, затем возвращает
+            существующий биндинг из <code>_bindings</code> либо создаёт новый через <code>create()</code> и
+            сохраняет. <code>assert(_seenStack.isNotEmpty, ...)</code> — защита от вызова
+            <code>watch</code>/<code>select</code>/<code>effect</code> вне <code>build()</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+Widget <span class="nm">build</span>()</span>
+            <p>Сохраняет предыдущий <code>_current</code>, выставляет себя текущим, достаёт (или создаёт) пустой
+            набор <code>seen</code> из пула, кладёт его в стек, вызывает <code>super.build()</code> (реальный
+            <code>build()</code> виджета), в <code>finally</code>: снимает набор со стека, восстанавливает
+            <code>_current</code>, зовёт <code>_disposeUnseenBindings(finished)</code>, очищает набор и кладёт
+            его обратно в пул.</p>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">_disposeUnseenBindings</span>(Set&lt;_BindingKey&gt; seen)</span>
+            <p>Удаляет из <code>_bindings</code> и вызывает <code>dispose()</code> на всех биндингах, чей ключ
+            не встретился в текущем проходе <code>build()</code> — биндинги, не вызванные в очередном
+            <code>build()</code> (например, условный <code>watch()</code> внутри <code>if</code>, который в этот
+            раз не сработал), автоматически освобождаются сразу после него — без утечек и ручного управления.</p>
+          </div>
+          <div class="member">
+            <span class="sig">@override
+<span class="kw">void</span> <span class="nm">unmount</span>()</span>
+            <p>При размонтировании элемента — <code>dispose()</code> на <b>всех</b> оставшихся биндингах, затем
+            очистка карты.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="component" id="_requireElement">
+        <div class="component-head"><span class="badge fn">function · internal</span><span class="component-name">_requireElement()</span></div>
+        <div class="card"><div class="member">
+          <p>Возвращает <code>HelmReactiveElement._current</code>, с <code>assert</code>-сообщением, что
+          <code>feature.watch()</code>/<code>.select()</code>/<code>.effect()</code> можно вызывать только
+          внутри <code>build()</code> виджета, унаследованного от <code>HelmWidget</code>/<code>StatefulHelmWidget</code>.
+          Вне build() — используй <code>feature.value</code>/<code>.read()</code>/<code>.listen()</code> напрямую.</p>
+        </div></div>
+      </div>
+
+      <hr class="sep">
+
+      <div class="component" id="HelmFeatureReactive">
+        <div class="component-head"><span class="badge ext">extension</span><span class="component-name">HelmFeatureReactive&lt;S, E&gt;</span> on HelmFeature&lt;S, E&gt;</div>
+        <p class="component-tagline">Короткий реактивный синтаксис прямо на токене фичи. Работает только внутри build() HelmWidget/StatefulHelmWidget.</p>
+        <div class="card">
+          <div class="member">
+            <span class="sig">S <span class="nm">watch</span>({Object? key})</span>
+            <p>Подписка на весь <code>S</code> + ребилд при каждом изменении — аналог <code>HelmBuilder</code>.
+            Находит текущий элемент через <code>_requireElement()</code>, строит <code>_BindingKey(this, watch, key)</code>,
+            получает/создаёт <code>_WatchBinding</code> (с колбэком <code>element.markNeedsBuild</code>),
+            возвращает <code>.value</code>. <code>key</code> нужен, только если на одной фиче зовётся несколько
+            независимых <code>watch()</code> в одном виджете — на практике почти никогда.</p>
+          </div>
+          <div class="member">
+            <span class="sig">R <span class="nm">select</span>&lt;R&gt;(R Function(S) selector, {Object? key})</span>
+            <p>Точечная подписка по срезу состояния (<code>==</code>) — аналог <code>HelmSelector</code>.
+            Получает/создаёт <code>_SelectBinding</code>, <b>переприсваивает</b> его <code>selector</code>
+            (чтобы замыкание всегда было свежим), зовёт <code>binding.resync()</code> — пересчитывает немедленно,
+            и возвращает <code>.value</code>.</p>
+            <div class="note warn"><code>key</code> обязателен, если на одной фиче вызывается несколько разных
+            <code>select()</code> в одном виджете — иначе они делят биндинг и видят только последний вызванный
+            <code>selector</code>:<br><span class="mono">final title = documentFeature.select((s) =&gt; s.title, key: #title);<br>final words = documentFeature.select((s) =&gt; s.body.length, key: #words);</span></div>
+          </div>
+          <div class="member">
+            <span class="sig"><span class="kw">void</span> <span class="nm">effect</span>(void Function(S) callback, {Object? key})</span>
+            <p>Побочный эффект на каждое изменение состояния — аналог <code>HelmListener</code>, но по
+            состоянию, а не по эффектам; не вызывает ребилд. Первый вызов — сразу после текущего кадра,
+            последующие — на каждое изменение. Получает/создаёт <code>_EffectBinding</code>, переприсваивает
+            его <code>effect</code>.</p>
+          </div>
+          <div class="member">
+            <span class="sig">S <span class="nm">read</span>() =&gt; value;</span>
+            <p>Синхронное чтение без подписки — алиас <code>value</code>, для симметрии с <code>watch</code>.
+            Можно вызывать откуда угодно, не только из <code>build()</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- FLUTTER.DART BARREL -->
+    <!-- ================================================================ -->
+    <section class="file-section" id="flutter_barrel">
+      <div class="file-head">
+        <span class="badge file">FILE</span>
+        <h2>flutter.dart</h2>
+        <span class="file-path">lib/flutter.dart — точка входа Flutter-моста</span>
+      </div>
+      <p class="file-role">Barrel-файл моста: экспортирует <code>helm_builder.dart</code>,
+      <code>helm_computed.dart</code>, <code>helm_controller.dart</code>, <code>helm_feature.dart</code>,
+      <code>helm_loadable.dart</code>, <code>helm_reactive.dart</code>. <code>dispatch_proxy.dart</code> и
+      <code>binding_utils.dart</code> намеренно не экспортируются напрямую — это внутренние утилиты,
+      используемые остальными файлами моста, а не публичный API.</p>
+
+      <div class="note tip">
+        <b>Какой API выбрать (памятка из докстринга файла):</b>
+        <ul style="margin:8px 0 0 18px;">
+          <li>весь ребилд по всему состоянию → <code>HelmBuilder</code> / <code>feature.watch()</code></li>
+          <li>ребилд по срезу → <code>HelmSelector</code> / <code>feature.select()</code></li>
+          <li>из нескольких фич сразу → <code>HelmComputed</code></li>
+          <li>вне <code>build()</code> → <code>feature.value</code> / <code>.listen()</code></li>
+        </ul>
+        Все четыре виджет-обёртки (<code>HelmBuilder</code>/<code>HelmSelector</code>/<code>HelmListener</code>/<code>HelmConsumer</code>)
+        и три reactive-метода (<code>watch</code>/<code>select</code>/<code>effect</code>) — это <b>один и тот
+        же</b> внутренний механизм подписки в двух разных синтаксисах (явный <code>StatefulWidget</code> вокруг
+        дерева vs. вызов прямо в <code>build()</code>), а не два независимых способа решить одну задачу.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<a href="#overview" class="backtop" title="Наверх">↑</a>
+
+<footer>
+  Справочник сгенерирован на основе исходного кода библиотеки Helm (26 файлов: core + flutter bridge).
+  Комментарии в коде — на русском языке; этот документ раскрывает и структурирует их по каждому классу,
+  миксину, интерфейсу, extension-у и методу.
+</footer>
+
+</body>
+</html>
