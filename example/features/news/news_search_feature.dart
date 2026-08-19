@@ -14,12 +14,15 @@ final class NewsSearchState {
   final List<Article> results;
   final bool isSearching;
 
-  NewsSearchState copyWith({String? authorId, List<Article>? results, bool? isSearching}) =>
-      NewsSearchState(
-        authorId: authorId ?? this.authorId,
-        results: results ?? this.results,
-        isSearching: isSearching ?? this.isSearching,
-      );
+  NewsSearchState copyWith({
+    String? authorId,
+    List<Article>? results,
+    bool? isSearching,
+  }) => NewsSearchState(
+    authorId: authorId ?? this.authorId,
+    results: results ?? this.results,
+    isSearching: isSearching ?? this.isSearching,
+  );
 }
 
 /// Защита от race condition "из коробки": повторный ввод диспатчит эту же
@@ -38,12 +41,17 @@ final class SearchByAuthorCommand implements IAsyncCommand<NewsSearchState> {
     IStateWriter<NewsSearchState> writer,
     CancelToken cancel,
   ) async {
-    writer.commit(reader.current.copyWith(isSearching: true, authorId: '$authorId'));
+    writer.commit(
+      reader.current.copyWith(isSearching: true, authorId: '$authorId'),
+    );
 
     final results = await _api.searchByAuthor(authorId);
+
     if (cancel.isCancelled) return;
 
-    writer.commit(reader.current.copyWith(results: results, isSearching: false));
+    writer.commit(
+      reader.current.copyWith(results: results, isSearching: false),
+    );
   }
 }
 

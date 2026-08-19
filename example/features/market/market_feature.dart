@@ -16,24 +16,20 @@ final class WatchMarketCommand implements IStreamCommand<MarketState> {
     IStateReader<MarketState> reader,
     IStateWriter<MarketState> writer,
   ) {
-    writer.commit(reader.current.copyWith(status: ConnectionStatus.connecting));
+    writer.commit(reader.current.copyWith(status: .connecting));
 
     return _socket.events().map((event) {
       switch (event) {
         case MarketSocketConnected():
-          writer.commit(reader.current.copyWith(status: ConnectionStatus.live));
+          writer.commit(reader.current.copyWith(status: .live));
 
         case MarketSocketReconnecting():
-          writer.commit(
-            reader.current.copyWith(status: ConnectionStatus.reconnecting),
-          );
+          writer.commit(reader.current.copyWith(status: .reconnecting));
 
         case MarketTickerUpdated(:final ticker):
           final next = Map<String, Ticker>.of(reader.current.tickers)
             ..[ticker.symbol] = ticker;
-          writer.commit(
-            MarketState(status: ConnectionStatus.live, tickers: next),
-          );
+          writer.commit(MarketState(status: .live, tickers: next));
       }
     });
   }
@@ -47,5 +43,6 @@ HelmFeature<MarketState, Never> buildMarketFeature(MarketSocket socket) {
   );
 
   feature.dispatchStream(WatchMarketCommand(socket));
+
   return feature;
 }

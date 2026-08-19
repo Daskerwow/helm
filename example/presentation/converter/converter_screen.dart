@@ -29,15 +29,15 @@ class _ConverterScreenState extends State<ConverterScreen> {
 
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const .all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: .start,
           children: [
             Text(
               'Конвертер',
               style: Theme.of(
                 context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+              ).textTheme.headlineSmall?.copyWith(fontWeight: .w700),
             ),
             const SizedBox(height: 24),
             Center(
@@ -134,7 +134,7 @@ class _ConverterScreenState extends State<ConverterScreen> {
                             Text(
                               '${amount.toStringAsFixed(4)} ${symbolTicker(_from)}\n≈ ${result.toStringAsFixed(6)} ${symbolTicker(_to)}',
                               style: Theme.of(context).textTheme.titleLarge,
-                              textAlign: TextAlign.center,
+                              textAlign: .center,
                             ),
                           ],
                         );

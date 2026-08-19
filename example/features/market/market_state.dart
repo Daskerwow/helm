@@ -18,7 +18,7 @@ typedef AssetRowData = ({Ticker ticker, List<double> history});
 
 final class MarketState {
   const MarketState({
-    this.status = ConnectionStatus.connecting,
+    this.status = .connecting,
     this.tickers = const {},
     this.history = const {},
   });
