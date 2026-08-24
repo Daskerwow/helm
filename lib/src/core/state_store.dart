@@ -10,8 +10,8 @@ import 'cancel_token.dart';
 import 'dispatch.dart';
 import 'equality.dart';
 import 'middleware.dart';
-import 'state_command.dart';
-import 'state_effect_command.dart';
+import 'command.dart';
+import 'side_effect_command.dart';
 
 typedef _AsyncBody<E> = Future<E?> Function(CancelToken token);
 typedef _SyncBody<E> = E? Function();

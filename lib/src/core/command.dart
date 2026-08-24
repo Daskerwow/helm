@@ -1,6 +1,6 @@
 import 'cancel_token.dart';
 import 'state_access.dart';
-import 'state_effect_command.dart';
+import 'side_effect_command.dart';
 
 /// Мгновенная синхронная мутация состояния — без IO и side-эффектов.
 ///

@@ -1,8 +1,8 @@
 import 'cancel_token.dart';
 import 'loadable.dart';
 import 'state_access.dart';
-import 'state_effect_command.dart';
-import 'state_command.dart';
+import 'side_effect_command.dart';
+import 'command.dart';
 
 /// Общее ядро "loading → data / error" для [LoadCommand] и
 /// [LoadWithEffectCommand] — обе команды делают ровно один и тот же цикл
