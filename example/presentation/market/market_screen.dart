@@ -71,6 +71,7 @@ class _MarketScreenState extends State<MarketScreen> {
       (s) => s.status,
       key: #connectionStatus,
     );
+
     final tickers = deps.marketFeature.select(
       (s) => s.orderedTickers,
       key: #orderedTickers,
@@ -86,9 +87,8 @@ class _MarketScreenState extends State<MarketScreen> {
               children: [
                 Text(
                   'Рынок',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
                 ConnectionBadge(status: status),

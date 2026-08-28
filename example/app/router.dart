@@ -32,31 +32,38 @@ GoRouter buildRouter() {
       // ShellRoute держит сайдбар/шапку общими для всех вкладок нижнего
       // уровня — переключение между ними не пересоздаёт AppShell.
       ShellRoute(
-        builder: (context, state, child) => AppShell(child: child),
+        pageBuilder: (context, state, child) =>
+            NoTransitionPage(child: AppShell(child: child)),
         routes: [
           GoRoute(
             path: AppRoute.dashboard,
-            builder: (c, s) => const DashboardScreen(),
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: DashboardScreen()),
           ),
           GoRoute(
             path: AppRoute.market,
-            builder: (c, s) => const MarketScreen(),
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: MarketScreen()),
           ),
           GoRoute(
             path: AppRoute.watchlist,
-            builder: (c, s) => const WatchlistScreen(),
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: WatchlistScreen()),
           ),
           GoRoute(
             path: AppRoute.converter,
-            builder: (c, s) => const ConverterScreen(),
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: ConverterScreen()),
           ),
           GoRoute(
             path: AppRoute.news,
-            builder: (c, s) => const NewsListScreen(),
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: NewsListScreen()),
           ),
           GoRoute(
             path: AppRoute.settings,
-            builder: (c, s) => const SettingsScreen(),
+            pageBuilder: (c, s) =>
+                const NoTransitionPage(child: SettingsScreen()),
           ),
         ],
       ),
@@ -64,16 +71,20 @@ GoRouter buildRouter() {
       // полноценные под-страницы.
       GoRoute(
         path: '/market/:symbol',
-        builder: (c, s) =>
-            CurrencyDetailScreen(symbol: s.pathParameters['symbol']!),
+        pageBuilder: (c, s) => NoTransitionPage(
+          child: CurrencyDetailScreen(symbol: s.pathParameters['symbol']!),
+        ),
       ),
       GoRoute(
         path: AppRoute.newsSearch,
-        builder: (c, s) => const NewsSearchScreen(),
+        pageBuilder: (c, s) =>
+            const NoTransitionPage(child: NewsSearchScreen()),
       ),
       GoRoute(
         path: '/news/:id',
-        builder: (c, s) => ArticleDetailScreen(article: s.extra! as Article),
+        pageBuilder: (c, s) => NoTransitionPage(
+          child: ArticleDetailScreen(article: s.extra as Article),
+        ),
       ),
     ],
   );

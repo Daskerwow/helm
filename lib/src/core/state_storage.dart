@@ -16,11 +16,7 @@ abstract interface class IStateStorage<S> {
 }
 
 /// Хранилище состояния в памяти — реализация по умолчанию.
-final class StateMemoryStorage<S> implements IStateStorage<S> {
-  StateMemoryStorage(this._state);
-
-  S _state;
-
+final class StateMemoryStorage<S>(var S _state) implements IStateStorage<S> {
   @override
   S read() => _state;
 

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../state_access.dart';
 import '../cancel_token.dart';
 
@@ -47,8 +49,7 @@ final class GuardedWriter<S> implements IStateWriter<S> {
   void commit(S nextState) {
     if (_token.isCancelled) {
       assert(() {
-        // ignore: avoid_print
-        print(
+        debugPrint(
           'Helm: commit после отмены — команда $_commandLabel не проверяет '
           'cancel.isCancelled самостоятельно (коммит проигнорирован).',
         );

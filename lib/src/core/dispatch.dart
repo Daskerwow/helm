@@ -117,33 +117,26 @@ final class DispatchEvent<S> {
 ///   case DispatchCancelled(:final reason): print('отменено: ${reason.name}');
 /// }
 /// ```
-sealed class DispatchResult<S> {
-  const DispatchResult();
-}
+sealed class const DispatchResult<S>();
 
 /// Команда выполнена успешно.
-final class DispatchSuccess<S> extends DispatchResult<S> {
-  const DispatchSuccess(this.state);
-
+final class const DispatchSuccess<S>(
   /// Состояние Store после выполнения команды.
-  final S state;
-}
+  final S state,
+) extends DispatchResult<S> {}
 
 /// Команда завершилась необработанным исключением.
 ///
 /// Состояние могло измениться: любой `IStateWriter.commit`, сделанный до
 /// исключения, уже применён и опубликован.
-final class DispatchFailure<S> extends DispatchResult<S> {
-  const DispatchFailure(this.error, this.stackTrace);
-  final Object error;
-  final StackTrace stackTrace;
-}
+final class const DispatchFailure<S>(
+  final Object error,
+  final StackTrace stackTrace,
+) extends DispatchResult<S> {}
 
 /// Команда отменена до завершения — см. [CancelReason].
 ///
 /// Состояние могло измениться: коммиты до отмены уже применены — Store лишь
 /// гарантирует, что коммиты *после* отмены игнорируются.
-final class DispatchCancelled<S> extends DispatchResult<S> {
-  const DispatchCancelled(this.reason);
-  final CancelReason reason;
-}
+final class const DispatchCancelled<S>(final CancelReason reason)
+    extends DispatchResult<S> {}

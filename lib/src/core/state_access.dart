@@ -21,11 +21,8 @@ abstract interface class IStateAccessor<S>
     implements IStateReader<S>, IStateWriter<S> {}
 
 /// Адаптер [IStateAccessor] → [IStateStorage] — без бизнес-логики.
-final class StateAccessor<S> implements IStateAccessor<S> {
-  const StateAccessor(this._storage);
-
-  final IStateStorage<S> _storage;
-
+final class const StateAccessor<S>(final IStateStorage<S> _storage)
+    implements IStateAccessor<S> {
   @override
   S get current => _storage.read();
 

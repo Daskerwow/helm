@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 import 'internal/callback_list.dart';
 import 'internal/guarded_writer.dart';
 import 'internal/tracking_writer.dart';
@@ -23,11 +25,10 @@ typedef _SyncBody<E> = E? Function();
 /// той же группы, явный [StateStore.cancelStream] или [StateStore.close])
 /// самой команды уже нет под рукой — её видел только `execute()` в момент
 /// подписки — а [DispatchEvent] требует `commandLabel`.
-final class _ActiveStreamSubscription {
-  const _ActiveStreamSubscription(this.subscription, this.label);
-  final StreamSubscription<void> subscription;
-  final String label;
-}
+final class const _ActiveStreamSubscription(
+  final StreamSubscription<void> subscription,
+  final String label,
+);
 
 /// Четыре независимых канала синхронной публикации [StateStore]: изменения
 /// состояния, side-эффекты, исходы диспатча, необработанные исключения.
@@ -72,23 +73,30 @@ final class _ListenerHub<S, E> {
   /// повторный отчёт.
   bool _reportingError = false;
 
-  void notifyChange(S state) =>
-      changes.notify((l) => l(state), onError: _reportListenerError);
+  void notifyChange(S state) => changes.notify(
+    (listener) => listener(state),
+    onError: _reportListenerError,
+  );
 
-  void notifyEffect(E effect) =>
-      effects.notify((l) => l(effect), onError: _reportListenerError);
+  void notifyEffect(E effect) => effects.notify(
+    (listener) => listener(effect),
+    onError: _reportListenerError,
+  );
 
-  void notifyDispatch(DispatchEvent<S> event) =>
-      dispatches.notify((l) => l(event), onError: _reportListenerError);
+  void notifyDispatch(DispatchEvent<S> event) => dispatches.notify(
+    (listener) => listener(event),
+    onError: _reportListenerError,
+  );
 
-  void notifyError(Object error, StackTrace stackTrace) =>
-      errors.notify((l) => l(error, stackTrace), onError: _reportListenerError);
+  void notifyError(Object error, StackTrace stackTrace) => errors.notify(
+    (listener) => listener(error, stackTrace),
+    onError: _reportListenerError,
+  );
 
   void _reportListenerError(Object error, StackTrace stackTrace) {
     if (_reportingError) {
       assert(() {
-        // ignore: avoid_print
-        print(
+        debugPrint(
           'Helm: слушатель канала errors сам бросил исключение — '
           'дальнейшая эскалация невозможна: $error',
         );
@@ -99,7 +107,7 @@ final class _ListenerHub<S, E> {
 
     _reportingError = true;
     try {
-      errors.notify((l) => l(error, stackTrace));
+      errors.notify((listener) => listener(error, stackTrace));
     } catch (_) {
       // errors.notify() здесь вызван без onError — если он всё же
       // пробросил исключение (например, только один listener и он упал),

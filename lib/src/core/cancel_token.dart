@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'internal/callback_list.dart';
 
 /// Причина отмены — см. [CancelToken.reason] и `DispatchCancelled`.
@@ -42,7 +44,7 @@ final class CancelToken {
   CancelReason? get reason => _reason;
 
   /// Отменяет токен. Повторный вызов — no-op: причина не перезаписывается.
-  void cancel([CancelReason reason = CancelReason.userRequested]) {
+  void cancel([CancelReason reason = .userRequested]) {
     if (_reason != null) return;
     _reason = reason;
 
@@ -59,8 +61,7 @@ final class CancelToken {
       (callback) => callback(),
       onError: (error, stackTrace) {
         assert(() {
-          // ignore: avoid_print
-          print(
+          debugPrint(
             'Helm: колбэк CancelToken.whenCancelled бросил исключение при '
             'отмене — остальные колбэки всё равно вызваны: $error',
           );
