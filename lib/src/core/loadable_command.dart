@@ -74,7 +74,7 @@ final class LoadCommand<T> implements AsyncCommand<Loadable<T>> {
 /// Как [LoadCommand], но ошибка превращается в side-эффект (например,
 /// показ SnackBar) вместо переброса исключения.
 final class LoadWithEffectCommand<T, E>
-    implements IAsyncSideEffect<Loadable<T>, E> {
+    implements AsyncSideEffect<Loadable<T>, E> {
   const LoadWithEffectCommand(this.load, {this.onSuccess, this.onError});
 
   final Future<T> Function() load;

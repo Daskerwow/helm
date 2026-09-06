@@ -418,12 +418,11 @@ final class StateStore<S, E> {
       });
 
   /// Как [dispatch], но с side-эффектом.
-  Future<DispatchResult<S>> dispatchWithEffect(
-    IAsyncSideEffect<S, E> command,
-  ) => _dispatchAsync(
-    command,
-    (writer, token) => command.execute(_accessor, writer, token),
-  );
+  Future<DispatchResult<S>> dispatchWithEffect(AsyncSideEffect<S, E> command) =>
+      _dispatchAsync(
+        command,
+        (writer, token) => command.execute(_accessor, writer, token),
+      );
 
   /// Общее ядро [dispatch]/[dispatchWithEffect]: строит защищённый от
   /// коммитов-после-отмены writer ([GuardedWriter] поверх [EmittingWriter])

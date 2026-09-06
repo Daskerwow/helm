@@ -49,7 +49,7 @@ abstract interface class SyncSideEffect<S, E> {
 ///   }
 /// }
 /// ```
-abstract interface class IAsyncSideEffect<S, E> {
+abstract interface class AsyncSideEffect<S, E> {
   Future<E?> execute(
     IStateReader<S> reader,
     StateWriter<S> writer,

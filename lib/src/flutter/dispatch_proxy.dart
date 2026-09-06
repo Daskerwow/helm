@@ -25,9 +25,8 @@ mixin DispatchProxy<S, E> {
   Future<DispatchResult<S>> dispatch(AsyncCommand<S> command) =>
       dispatchTarget.dispatch(command);
 
-  Future<DispatchResult<S>> dispatchWithEffect(
-    IAsyncSideEffect<S, E> command,
-  ) => dispatchTarget.dispatchWithEffect(command);
+  Future<DispatchResult<S>> dispatchWithEffect(AsyncSideEffect<S, E> command) =>
+      dispatchTarget.dispatchWithEffect(command);
 
   DispatchResult<S> dispatchSync(SyncCommand<S> command) =>
       dispatchTarget.dispatchSync(command);
