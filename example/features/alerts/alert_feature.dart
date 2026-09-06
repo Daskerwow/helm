@@ -39,7 +39,7 @@ final class MultiplePricesCrossedThreshold extends AlertEffect {
   final List<PriceCrossedThreshold> crossings;
 }
 
-final class SetThresholdCommand implements ISyncCommand<AlertState> {
+final class SetThresholdCommand implements SyncCommand<AlertState> {
   const SetThresholdCommand(this.symbol, this.threshold);
   final String symbol;
   final double threshold;
@@ -52,7 +52,7 @@ final class SetThresholdCommand implements ISyncCommand<AlertState> {
   }
 }
 
-final class ClearThresholdCommand implements ISyncCommand<AlertState> {
+final class ClearThresholdCommand implements SyncCommand<AlertState> {
   const ClearThresholdCommand(this.symbol);
   final String symbol;
 
@@ -66,7 +66,7 @@ final class ClearThresholdCommand implements ISyncCommand<AlertState> {
 }
 
 final class _CheckPricesCommand
-    implements ISyncSideEffect<AlertState, AlertEffect> {
+    implements SyncSideEffect<AlertState, AlertEffect> {
   const _CheckPricesCommand(this.prices);
   final Map<String, double> prices;
 

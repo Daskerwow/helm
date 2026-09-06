@@ -29,7 +29,7 @@ final class NewsSearchState {
 /// команду заново, `StateStore.dispatch` сам отменяет предыдущий
 /// незавершённый вызов того же типа команды — устаревший ответ никогда не
 /// перезапишет более новый результат.
-final class SearchByAuthorCommand implements IAsyncCommand<NewsSearchState> {
+final class SearchByAuthorCommand implements AsyncCommand<NewsSearchState> {
   const SearchByAuthorCommand(this._api, this.authorId);
 
   final NewsApi _api;

@@ -21,7 +21,7 @@ typedef SyncSideEffectResult<S, E> = (S next, E? effect);
 ///   }
 /// }
 /// ```
-abstract interface class ISyncSideEffect<S, E> {
+abstract interface class SyncSideEffect<S, E> {
   SyncSideEffectResult<S, E> execute(S current);
 }
 

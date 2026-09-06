@@ -50,7 +50,7 @@ Future<void> _runLoadable<T>({
 /// ```dart
 /// store.dispatch(LoadCommand(() => api.fetchTodos()));
 /// ```
-final class LoadCommand<T> implements IAsyncCommand<Loadable<T>> {
+final class LoadCommand<T> implements AsyncCommand<Loadable<T>> {
   const LoadCommand(this.load);
   final Future<T> Function() load;
 
@@ -120,7 +120,7 @@ final class LoadWithEffectCommand<T, E>
 /// ```dart
 /// store.dispatchStream(WatchCommand(() => socket.messages));
 /// ```
-final class WatchCommand<T> implements IStreamCommand<Loadable<T>> {
+final class WatchCommand<T> implements StreamCommand<Loadable<T>> {
   const WatchCommand(this.source);
 
   /// Строит `Stream` при каждой подписке, а не готовый `Stream`, чтобы

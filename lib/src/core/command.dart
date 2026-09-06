@@ -8,13 +8,13 @@ import 'side_effect_command.dart';
 /// `await`, без токена отмены.
 ///
 /// ```dart
-/// final class ToggleThemeCommand implements ISyncCommand<AppState> {
+/// final class ToggleThemeCommand implements SyncCommand<AppState> {
 ///   const ToggleThemeCommand();
 ///   @override
 ///   AppState execute(AppState current) => current.copyWith(isDark: !current.isDark);
 /// }
 /// ```
-abstract interface class ISyncCommand<S> {
+abstract interface class SyncCommand<S> {
   S execute(S current);
 }
 
@@ -24,7 +24,7 @@ abstract interface class ISyncCommand<S> {
 /// см. докстринг `CancelToken`.
 ///
 /// ```dart
-/// final class FetchUserCommand implements IAsyncCommand<UserState> {
+/// final class FetchUserCommand implements AsyncCommand<UserState> {
 ///   const FetchUserCommand(this._api);
 ///   final UserApi _api;
 ///
@@ -36,7 +36,7 @@ abstract interface class ISyncCommand<S> {
 ///   }
 /// }
 /// ```
-abstract interface class IAsyncCommand<S> {
+abstract interface class AsyncCommand<S> {
   Future<void> execute(
     IStateReader<S> reader,
     IStateWriter<S> writer,
@@ -51,7 +51,7 @@ abstract interface class IAsyncCommand<S> {
 /// же группой отмены (см. `DispatchKeyed`).
 ///
 /// ```dart
-/// final class LocationStreamCommand implements IStreamCommand<MapState> {
+/// final class LocationStreamCommand implements StreamCommand<MapState> {
 ///   const LocationStreamCommand(this._gps);
 ///   final GpsService _gps;
 ///
@@ -63,7 +63,7 @@ abstract interface class IAsyncCommand<S> {
 /// store.dispatchStream(LocationStreamCommand(_gps));
 /// store.cancelStream<LocationStreamCommand>();
 /// ```
-abstract interface class IStreamCommand<S> {
+abstract interface class StreamCommand<S> {
   Stream<void> execute(IStateReader<S> reader, IStateWriter<S> writer);
 }
 
@@ -73,7 +73,7 @@ abstract interface class IStreamCommand<S> {
 /// ```dart
 /// store.dispatchSync(SetStateCommand(FilterZone.all));
 /// ```
-final class SetStateCommand<S> implements ISyncCommand<S> {
+final class SetStateCommand<S> implements SyncCommand<S> {
   const SetStateCommand(this.next);
   final S next;
 
@@ -87,7 +87,7 @@ final class SetStateCommand<S> implements ISyncCommand<S> {
 /// ```dart
 /// store.dispatchSync(UpdateStateCommand((s) => s.copyWith(isOpen: !s.isOpen)));
 /// ```
-final class UpdateStateCommand<S> implements ISyncCommand<S> {
+final class UpdateStateCommand<S> implements SyncCommand<S> {
   const UpdateStateCommand(this.update);
   final S Function(S current) update;
 
@@ -96,7 +96,7 @@ final class UpdateStateCommand<S> implements ISyncCommand<S> {
 }
 
 /// Как [SetStateCommand], но дополнительно эмитирует side-эффект.
-final class SetStateWithEffectCommand<S, E> implements ISyncSideEffect<S, E> {
+final class SetStateWithEffectCommand<S, E> implements SyncSideEffect<S, E> {
   const SetStateWithEffectCommand(this.next, {this.effect});
   final S next;
   final E? effect;
@@ -107,8 +107,7 @@ final class SetStateWithEffectCommand<S, E> implements ISyncSideEffect<S, E> {
 
 /// Как [UpdateStateCommand], но функция сразу возвращает и состояние, и
 /// опциональный эффект — для случаев, когда эффект зависит от результата.
-final class UpdateStateWithEffectCommand<S, E>
-    implements ISyncSideEffect<S, E> {
+final class UpdateStateWithEffectCommand<S, E> implements SyncSideEffect<S, E> {
   const UpdateStateWithEffectCommand(this.update);
   final SyncSideEffectResult<S, E> Function(S current) update;
 
@@ -122,7 +121,7 @@ final class UpdateStateWithEffectCommand<S, E>
 /// ```dart
 /// store.dispatch(LoadStateCommand(() => repository.fetchFilterZones()));
 /// ```
-final class LoadStateCommand<S> implements IAsyncCommand<S> {
+final class LoadStateCommand<S> implements AsyncCommand<S> {
   const LoadStateCommand(this.load);
   final Future<S> Function() load;
 
@@ -140,7 +139,7 @@ final class LoadStateCommand<S> implements IAsyncCommand<S> {
 
 /// Эмитирует side-эффект, не трогая состояние — навигация, диалог,
 /// аналитическое событие.
-final class EmitEffectCommand<S, E> implements ISyncSideEffect<S, E> {
+final class EmitEffectCommand<S, E> implements SyncSideEffect<S, E> {
   const EmitEffectCommand(this.effect);
   final E effect;
 

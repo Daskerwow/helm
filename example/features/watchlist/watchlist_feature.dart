@@ -17,7 +17,7 @@ final class WatchlistState {
   }
 }
 
-final class ToggleWatchCommand implements ISyncCommand<WatchlistState> {
+final class ToggleWatchCommand implements SyncCommand<WatchlistState> {
   const ToggleWatchCommand(this.symbol);
   final String symbol;
 

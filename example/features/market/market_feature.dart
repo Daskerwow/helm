@@ -6,7 +6,7 @@ import 'package:helm/flutter.dart';
 import '../../data/market/market_socket.dart';
 import 'market_state.dart';
 
-final class WatchMarketCommand implements IStreamCommand<MarketState> {
+final class WatchMarketCommand implements StreamCommand<MarketState> {
   const WatchMarketCommand(this._socket);
 
   final MarketSocket _socket;
@@ -37,9 +37,10 @@ final class WatchMarketCommand implements IStreamCommand<MarketState> {
 
 HelmFeature<MarketState, Never> buildMarketFeature(MarketSocket socket) {
   final feature = HelmFeature<MarketState, Never>(
-    () => StoreBuilder<MarketState, Never>(
-      const MarketState(),
-    ).disableStreamDispatchLogging().build(),
+    () =>
+        StoreBuilder<MarketState, Never>(const MarketState())
+            .disableStreamDispatchLogging()
+            .build(),
   );
 
   feature.dispatchStream(WatchMarketCommand(socket));

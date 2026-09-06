@@ -373,7 +373,7 @@ final class StateStore<S, E> {
   /// же группой отмены (см. `DispatchKeyed`) уже активна — предыдущая
   /// подписка отменяется первой (см. [_cancelStreamSubscription]). После
   /// [close] — no-op.
-  void dispatchStream(IStreamCommand<S> command) =>
+  void dispatchStream(StreamCommand<S> command) =>
       _dispatchStream(command, (writer) => command.execute(_accessor, writer));
 
   /// Подписывается на Stream-команду с side-эффектами. Та же семантика
@@ -411,7 +411,7 @@ final class StateStore<S, E> {
   /// уже выполняется — предыдущая отменяется с [CancelReason.superseded].
   /// После [close] немедленно возвращает
   /// `DispatchCancelled(CancelReason.storeClosed)`, не запуская команду.
-  Future<DispatchResult<S>> dispatch(IAsyncCommand<S> command) =>
+  Future<DispatchResult<S>> dispatch(AsyncCommand<S> command) =>
       _dispatchAsync(command, (writer, token) async {
         await command.execute(_accessor, writer, token);
         return null;
@@ -452,14 +452,14 @@ final class StateStore<S, E> {
   /// Отправляет синхронную команду. Выполняется мгновенно, не может быть
   /// отменена. После [close] немедленно возвращает
   /// `DispatchCancelled(CancelReason.storeClosed)`.
-  DispatchResult<S> dispatchSync(ISyncCommand<S> command) =>
+  DispatchResult<S> dispatchSync(SyncCommand<S> command) =>
       _dispatchSyncInternal(
         command,
         () => (command.execute(_accessor.current), null),
       );
 
   /// Как [dispatchSync], но с side-эффектом.
-  DispatchResult<S> dispatchSyncWithEffect(ISyncSideEffect<S, E> command) =>
+  DispatchResult<S> dispatchSyncWithEffect(SyncSideEffect<S, E> command) =>
       _dispatchSyncInternal(command, () => command.execute(_accessor.current));
 
   /// Общее ядро [dispatchSync]/[dispatchSyncWithEffect].

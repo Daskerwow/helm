@@ -6,14 +6,14 @@ final class _CounterState {
   final int count;
 }
 
-final class _Increment implements ISyncCommand<_CounterState> {
+final class _Increment implements SyncCommand<_CounterState> {
   const _Increment();
   @override
   _CounterState execute(_CounterState current) =>
       _CounterState(current.count + 1);
 }
 
-final class _Fail implements IAsyncCommand<_CounterState> {
+final class _Fail implements AsyncCommand<_CounterState> {
   const _Fail();
   @override
   Future<void> execute(reader, writer, cancel) async {
@@ -23,7 +23,7 @@ final class _Fail implements IAsyncCommand<_CounterState> {
 
 /// Generic-команда — используется, чтобы проверить, что разные
 /// инстанциации `_Load<T>` не отменяют друг друга (реифицированные дженерики).
-final class _Load<T> implements IAsyncCommand<Loadable<T>> {
+final class _Load<T> implements AsyncCommand<Loadable<T>> {
   const _Load(this.value, {this.delay = Duration.zero});
   final T value;
   final Duration delay;
@@ -38,7 +38,7 @@ final class _Load<T> implements IAsyncCommand<Loadable<T>> {
 
 /// Команда с явным dispatchKey — параллельные запуски с разным userId не
 /// должны вытеснять друг друга.
-final class _FetchUser implements IAsyncCommand<String>, DispatchKeyed {
+final class _FetchUser implements AsyncCommand<String>, DispatchKeyed {
   const _FetchUser(this.userId, this.delay);
   final String userId;
   final Duration delay;
@@ -143,26 +143,23 @@ void main() {
       },
     );
 
-    test(
-      'DispatchKeyed: параллельные запросы с разным ключом не вытесняют друг друга',
-      () async {
-        final store = StateStore<String, Never>(initialState: '');
+    test('DispatchKeyed: параллельные запросы с разным ключом не вытесняют друг друга', () async {
+      final store = StateStore<String, Never>(initialState: '');
 
-        final a = store.dispatch(
-          _FetchUser('alice', const Duration(milliseconds: 30)),
-        );
-        final b = store.dispatch(
-          _FetchUser('bob', const Duration(milliseconds: 10)),
-        );
+      final a = store.dispatch(
+        _FetchUser('alice', const Duration(milliseconds: 30)),
+      );
+      final b = store.dispatch(
+        _FetchUser('bob', const Duration(milliseconds: 10)),
+      );
 
-        final resultA = await a;
-        final resultB = await b;
+      final resultA = await a;
+      final resultB = await b;
 
-        expect(resultA, isA<DispatchSuccess<String>>());
-        expect(resultB, isA<DispatchSuccess<String>>());
-        store.close();
-      },
-    );
+      expect(resultA, isA<DispatchSuccess<String>>());
+      expect(resultB, isA<DispatchSuccess<String>>());
+      store.close();
+    });
   });
 
   group('close', () {
