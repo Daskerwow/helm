@@ -97,7 +97,9 @@ final class _FeatureLifecycle extends ChangeNotifier {
 /// `dispatch`, `dispatchSync`, `cancel` и другие даёт миксин [DispatchProxy]
 /// — он же используется [HelmController], поэтому набор методов определён
 /// один раз, а не дублируется на каждом уровне обёртки.
-final class HelmFeature<S, E> with DispatchProxy<S, E> implements HelmFeatureHandle {
+final class HelmFeature<S, E>
+    with DispatchProxy<S, E>
+    implements HelmFeatureHandle {
   HelmFeature(
     StateStore<S, E> Function() create, {
     this.onEffect,
@@ -263,14 +265,24 @@ final class HelmFeature<S, E> with DispatchProxy<S, E> implements HelmFeatureHan
   /// сбрасывает.
   ///
   /// Вызов без парного [acquire]/[acquireListenable]/[listen] — ошибка
-  /// использования: в debug бросает [AssertionError], в release — no-op.
+  /// использования. Бросает [StateError] **во всех сборках**, включая
+  /// release: тихий no-op здесь означал бы, что счётчик рефов молча ушёл в
+  /// рассинхрон, а следующий, уже корректный `release()` закроет Store
+  /// раньше времени — use-after-dispose где-то в проде, который на порядок
+  /// сложнее диагностировать постфактум, чем громкое падение в момент самой
+  /// ошибки использования.
   @override
   void release() {
-    assert(_refCount > 0, 'release() вызван без соответствующего acquire()');
+    if (_refCount <= 0) {
+      throw StateError(
+        'Helm: HelmFeature.release() вызван без соответствующего '
+        'acquire()/acquireListenable()/listen(). Проверь парность вызовов — '
+        'частые причины: забытый unsubscribe от listen(), двойной '
+        'dispose() виджета, release() в неверном месте жизненного цикла.',
+      );
+    }
 
-    if (_refCount <= 0) return;
     _refCount--;
-
     if (_refCount <= 0 && autoDispose) _disposeInternal();
   }
 
@@ -310,10 +322,11 @@ final class HelmFeature<S, E> with DispatchProxy<S, E> implements HelmFeatureHan
   /// регистрации), поведение то же, что и при простом "запомнить
   /// предыдущую фабрику". Восстановление НЕ в порядке LIFO (например,
   /// внешний `overrideWith` восстановлен раньше вложенного) — ошибка
-  /// использования: в debug бросает предупреждение через `assert`, в
-  /// release по-прежнему безопасно (снимает верхушку стека и не роняет
-  /// приложение), но итоговая активная фабрика может оказаться не той,
-  /// что вызывающий код ожидал — не полагайся на это поведение специально.
+  /// использования, и функция восстановления бросает [StateError] **во
+  /// всех сборках**: молчаливое восстановление верхушки стека в этом случае
+  /// подставило бы не ту фабрику, которую вызывающий код ожидал, и без
+  /// явного падения это осталось бы незамеченным до первого странного бага
+  /// в проде.
   void Function() overrideWith(StateStore<S, E> Function() create) {
     _overrideStack.add(_factory);
     final expectedStackLength = _overrideStack.length;
@@ -326,13 +339,14 @@ final class HelmFeature<S, E> with DispatchProxy<S, E> implements HelmFeatureHan
       if (restored) return;
       restored = true;
 
-      assert(
-        _overrideStack.length == expectedStackLength,
-        'Helm: overrideWith() восстановлен не в порядке LIFO — между '
-        'подменой и восстановлением этого overrideWith кто-то ещё не '
-        'восстановил свой. Оборачивай overrideWith/restore строго парами '
-        '(например, через addTearDown сразу после каждого overrideWith).',
-      );
+      if (_overrideStack.length != expectedStackLength) {
+        throw StateError(
+          'Helm: overrideWith() восстановлен не в порядке LIFO — между '
+          'подменой и восстановлением этого overrideWith кто-то ещё не '
+          'восстановил свой. Оборачивай overrideWith/restore строго парами '
+          '(например, через addTearDown сразу после каждого overrideWith).',
+        );
+      }
 
       if (isActive) _disposeInternal();
       _factory = _overrideStack.isNotEmpty

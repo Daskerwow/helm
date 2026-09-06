@@ -1,6 +1,6 @@
 import '../state_access.dart';
 
-/// Decorator над [IStateWriter], фиксирующий факт и "before"-состояние
+/// Decorator над [StateWriter], фиксирующий факт и "before"-состояние
 /// [commit] — нужен там, где нельзя заранее знать состояние "до": в
 /// Stream-командах коммит происходит на каждой итерации потока, до того как
 /// значение дойдёт до подписчика `StateStore`.
@@ -12,10 +12,10 @@ import '../state_access.dart';
 /// [EmittingWriter] как `_inner` и просто делегирует каждый [commit], так
 /// что в поток состояний уходит любое изменение сразу, независимо от
 /// группировки по итерациям.
-final class TrackingWriter<S> implements IStateWriter<S> {
+final class TrackingWriter<S> implements StateWriter<S> {
   TrackingWriter(this._inner, this._reader);
 
-  final IStateWriter<S> _inner;
+  final StateWriter<S> _inner;
   final IStateReader<S> _reader;
 
   bool _changed = false;

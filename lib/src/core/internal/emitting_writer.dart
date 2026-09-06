@@ -1,6 +1,6 @@
 import '../state_access.dart';
 
-/// Decorator над [IStateWriter], немедленно публикующий каждое реальное
+/// Decorator над [StateWriter], немедленно публикующий каждое реальное
 /// изменение состояния — синхронно, в момент вызова [commit], а не отложенно.
 ///
 /// `StateStore` обязан эмитировать в свой поток состояний *любой* успешный
@@ -16,7 +16,7 @@ import '../state_access.dart';
 /// повторное чтение `IStateAccessor.current` — для хранилищ с дорогим
 /// чтением (например, Hive с шифрованием) это вдвое меньше IO на каждый
 /// коммит: было "прочитать + записать", стало только "записать".
-final class EmittingWriter<S> implements IStateWriter<S> {
+final class EmittingWriter<S> implements StateWriter<S> {
   EmittingWriter(this._accessor, this._onChanged, this._equals)
     : _lastState = _accessor.current;
 

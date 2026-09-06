@@ -1,6 +1,9 @@
 name: helm
-description: Лёгкая библиотека управления состоянием для Dart и Flutter (без зависимости на Flutter SDK — совместима с любым слоем виджетов/DI, включая Riverpod).
-version: 1.0.0
+description: >-
+  Лёгкая, предсказуемая библиотека управления состоянием для Dart и Flutter:
+  явные исходы диспатча, отменяемые асинхронные команды, синхронная
+  публикация изменений без Stream-накладных расходов.
+version: 0.1.0
 # repository: https://github.com/my_org/my_repo
 
 environment:
@@ -10,13 +13,13 @@ environment:
 # подключает Helm как обычный Dart-пакет и сам решает, как связать
 # StateStore.states/effects со своими провайдерами — см. CHANGES.md.
 dependencies:
-  collection: ^1.19.1
-  dio: ^5.11.0
-  fl_chart: ^1.2.0
   flutter:
     sdk: flutter
   flutter_test:
     sdk: flutter
+  collection: ^1.19.1
+  dio: ^5.11.0
+  fl_chart: ^1.2.0
   go_router: ^17.5.0
   web_socket_channel: ^3.0.3
   material_ui: ^1.1.1

@@ -15,7 +15,7 @@ import 'command.dart';
 /// команды (ничего, rethrow, side-эффект).
 Future<void> _runLoadable<T>({
   required IStateReader<Loadable<T>> reader,
-  required IStateWriter<Loadable<T>> writer,
+  required StateWriter<Loadable<T>> writer,
   required CancelToken cancel,
   required Future<T> Function() load,
   required void Function(T value) onData,
@@ -57,7 +57,7 @@ final class LoadCommand<T> implements AsyncCommand<Loadable<T>> {
   @override
   Future<void> execute(
     IStateReader<Loadable<T>> reader,
-    IStateWriter<Loadable<T>> writer,
+    StateWriter<Loadable<T>> writer,
     CancelToken cancel,
   ) => _runLoadable<T>(
     reader: reader,
@@ -84,7 +84,7 @@ final class LoadWithEffectCommand<T, E>
   @override
   Future<E?> execute(
     IStateReader<Loadable<T>> reader,
-    IStateWriter<Loadable<T>> writer,
+    StateWriter<Loadable<T>> writer,
     CancelToken cancel,
   ) async {
     E? effect;
@@ -130,7 +130,7 @@ final class WatchCommand<T> implements StreamCommand<Loadable<T>> {
   @override
   Stream<void> execute(
     IStateReader<Loadable<T>> reader,
-    IStateWriter<Loadable<T>> writer,
+    StateWriter<Loadable<T>> writer,
   ) {
     if (reader.current is! LoadableData<T>) {
       writer.commit(Loadable.loading(reader.current.valueOrNull));

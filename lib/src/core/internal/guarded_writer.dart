@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../state_access.dart';
 import '../cancel_token.dart';
 
-/// Decorator над [IStateWriter], блокирующий коммиты после отмены токена —
+/// Decorator над [StateWriter], блокирующий коммиты после отмены токена —
 /// второй рубеж защиты поверх контракта "команда сама проверяет
 /// `CancelToken.isCancelled` перед каждым commit". Если команда нарушает
 /// контракт, [GuardedWriter] просто отбрасывает лишний коммит, не пуская
@@ -26,7 +26,7 @@ import '../cancel_token.dart';
 ///
 /// В любом случае коммит после отмены остаётся тихим и безопасным исходом:
 /// [commit] никогда не бросает исключение из-за самой диагностики.
-final class GuardedWriter<S> implements IStateWriter<S> {
+final class GuardedWriter<S> implements StateWriter<S> {
   const GuardedWriter(
     this._inner,
     this._token,
@@ -34,7 +34,7 @@ final class GuardedWriter<S> implements IStateWriter<S> {
     this._onDroppedCommit,
   });
 
-  final IStateWriter<S> _inner;
+  final StateWriter<S> _inner;
   final CancelToken _token;
 
   /// Имя команды для debug-сообщения — см. `DispatchLabeled`. Передаётся

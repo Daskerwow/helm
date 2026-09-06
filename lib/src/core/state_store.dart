@@ -432,7 +432,7 @@ final class StateStore<S, E> {
   /// side-эффект.
   Future<DispatchResult<S>> _dispatchAsync(
     Object command,
-    Future<E?> Function(IStateWriter<S> writer, CancelToken token) execute,
+    Future<E?> Function(StateWriter<S> writer, CancelToken token) execute,
   ) {
     if (_closed) {
       return Future.value(DispatchCancelled<S>(CancelReason.storeClosed));

@@ -39,7 +39,7 @@ abstract interface class SyncCommand<S> {
 abstract interface class AsyncCommand<S> {
   Future<void> execute(
     IStateReader<S> reader,
-    IStateWriter<S> writer,
+    StateWriter<S> writer,
     CancelToken cancel,
   );
 }
@@ -64,7 +64,7 @@ abstract interface class AsyncCommand<S> {
 /// store.cancelStream<LocationStreamCommand>();
 /// ```
 abstract interface class StreamCommand<S> {
-  Stream<void> execute(IStateReader<S> reader, IStateWriter<S> writer);
+  Stream<void> execute(IStateReader<S> reader, StateWriter<S> writer);
 }
 
 /// Заменяет состояние на заранее известное значение — без отдельного класса
@@ -128,7 +128,7 @@ final class LoadStateCommand<S> implements AsyncCommand<S> {
   @override
   Future<void> execute(
     IStateReader<S> reader,
-    IStateWriter<S> writer,
+    StateWriter<S> writer,
     CancelToken cancel,
   ) async {
     final next = await load();

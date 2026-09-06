@@ -14,7 +14,7 @@ final class WatchMarketCommand implements StreamCommand<MarketState> {
   @override
   Stream<void> execute(
     IStateReader<MarketState> reader,
-    IStateWriter<MarketState> writer,
+    StateWriter<MarketState> writer,
   ) {
     writer.commit(reader.current.copyWith(status: .connecting));
 

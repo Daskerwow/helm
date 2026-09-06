@@ -52,7 +52,7 @@ abstract interface class SyncSideEffect<S, E> {
 abstract interface class IAsyncSideEffect<S, E> {
   Future<E?> execute(
     IStateReader<S> reader,
-    IStateWriter<S> writer,
+    StateWriter<S> writer,
     CancelToken cancel,
   );
 }
@@ -73,5 +73,5 @@ abstract interface class IAsyncSideEffect<S, E> {
 /// }
 /// ```
 abstract interface class IStreamSideEffect<S, E> {
-  Stream<E?> execute(IStateReader<S> reader, IStateWriter<S> writer);
+  Stream<E?> execute(IStateReader<S> reader, StateWriter<S> writer);
 }
