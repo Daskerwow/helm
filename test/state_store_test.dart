@@ -1,13 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:helm/helm.dart';
 
-final class _CounterState {
-  const _CounterState(this.count);
-  final int count;
-}
+final class const _CounterState(final int count);
 
-final class _Increment implements SyncCommand<_CounterState> {
-  const _Increment();
+final class const _Increment() implements SyncCommand<_CounterState> {
   @override
   _CounterState execute(_CounterState current) =>
       _CounterState(current.count + 1);
@@ -23,11 +19,10 @@ final class _Fail implements AsyncCommand<_CounterState> {
 
 /// Generic-команда — используется, чтобы проверить, что разные
 /// инстанциации `_Load<T>` не отменяют друг друга (реифицированные дженерики).
-final class _Load<T> implements AsyncCommand<Loadable<T>> {
-  const _Load(this.value, {this.delay = Duration.zero});
-  final T value;
-  final Duration delay;
-
+final class const _Load<T>(
+  final T value, {
+  final Duration delay = Duration.zero,
+}) implements AsyncCommand<Loadable<T>> {
   @override
   Future<void> execute(reader, writer, cancel) async {
     if (delay > Duration.zero) await Future<void>.delayed(delay);
@@ -38,11 +33,8 @@ final class _Load<T> implements AsyncCommand<Loadable<T>> {
 
 /// Команда с явным dispatchKey — параллельные запуски с разным userId не
 /// должны вытеснять друг друга.
-final class _FetchUser implements AsyncCommand<String>, DispatchKeyed {
-  const _FetchUser(this.userId, this.delay);
-  final String userId;
-  final Duration delay;
-
+final class const _FetchUser(final String userId, final Duration delay)
+    implements AsyncCommand<String>, DispatchKeyed {
   @override
   Object get dispatchKey => (_FetchUser, userId);
 

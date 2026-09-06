@@ -14,7 +14,7 @@ enum DispatchKind { sync, async, stream }
 /// вытесняющих друг друга запусков (например, загрузка разных `userId`):
 ///
 /// ```dart
-/// final class FetchUserCommand implements IAsyncCommand<UserState>, DispatchKeyed {
+/// final class FetchUserCommand implements AsyncCommand<UserState>, DispatchKeyed {
 ///   const FetchUserCommand(this.userId);
 ///   final String userId;
 ///
@@ -123,7 +123,7 @@ sealed class const DispatchResult<S>();
 final class const DispatchSuccess<S>(
   /// Состояние Store после выполнения команды.
   final S state,
-) extends DispatchResult<S> {}
+) extends DispatchResult<S>;
 
 /// Команда завершилась необработанным исключением.
 ///
@@ -132,11 +132,11 @@ final class const DispatchSuccess<S>(
 final class const DispatchFailure<S>(
   final Object error,
   final StackTrace stackTrace,
-) extends DispatchResult<S> {}
+) extends DispatchResult<S>;
 
 /// Команда отменена до завершения — см. [CancelReason].
 ///
 /// Состояние могло измениться: коммиты до отмены уже применены — Store лишь
 /// гарантирует, что коммиты *после* отмены игнорируются.
 final class const DispatchCancelled<S>(final CancelReason reason)
-    extends DispatchResult<S> {}
+    extends DispatchResult<S>;
