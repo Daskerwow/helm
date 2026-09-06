@@ -36,10 +36,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // виджете — по докстрингу `HelmFeatureReactive.select` в этом случае
     // обязателен разный `key`, иначе оба вызова делят один биндинг и
     // видят только последний вызванный selector.
-    final status = deps.marketFeature.select((s) => s.status, key: #connectionStatus);
-    final selectedTicker = deps.marketFeature.select(
-      (s) => s.tickerOf(_selectedSymbol),
-      key: #selectedTicker,
+    final (status, selectedTicker) = deps.marketFeature.select(
+      (s) => (s.status, s.tickerOf(_selectedSymbol)),
     );
 
     return Scaffold(
@@ -52,7 +50,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Row(
                 children: [
-                  Text('Дашборд', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+                  Text(
+                    'Дашборд',
+                    style: Theme.of(context).textTheme.headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
                   const Spacer(),
                   ConnectionBadge(status: status),
                 ],
@@ -79,7 +81,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         StatCard(
                           icon: Icons.star_rounded,
                           label: 'В избранном',
-                          value: '${summary.watchedCount} из ${curatedSymbols.length}',
+                          value:
+                              '${summary.watchedCount} из ${curatedSymbols.length}',
                           accent: AppColors.warning,
                         ),
                         StatCard(
@@ -96,11 +99,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ];
                       return isWide
-                          ? Row(children: [for (final c in cards) Expanded(child: Padding(padding: const EdgeInsets.only(right: 12), child: c))])
+                          ? Row(
+                              children: [
+                                for (final c in cards)
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(right: 12),
+                                      child: c,
+                                    ),
+                                  ),
+                              ],
+                            )
                           : Wrap(
                               spacing: 12,
                               runSpacing: 12,
-                              children: [for (final c in cards) SizedBox(width: (constraints.maxWidth - 12) / 2, child: c)],
+                              children: [
+                                for (final c in cards)
+                                  SizedBox(
+                                    width: (constraints.maxWidth - 12) / 2,
+                                    child: c,
+                                  ),
+                              ],
                             );
                     },
                   );
@@ -124,7 +143,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   );
 
                   if (!isWide) {
-                    return Column(children: [chart, const SizedBox(height: 20), movers]);
+                    return Column(
+                      children: [chart, const SizedBox(height: 20), movers],
+                    );
                   }
                   return IntrinsicHeight(
                     child: Row(
@@ -145,7 +166,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Активы', style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        'Активы',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 14),
                       // Порядок строк — статический список корзины. Экран
                       // НЕ подписан на рыночные данные ради таблицы вообще
@@ -155,7 +179,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           for (var i = 0; i < curatedSymbols.length; i++) ...[
                             if (i > 0) const Divider(height: 1),
-                            AssetRow(key: ValueKey(curatedSymbols[i]), symbol: curatedSymbols[i]),
+                            AssetRow(
+                              key: ValueKey(curatedSymbols[i]),
+                              symbol: curatedSymbols[i],
+                            ),
                           ],
                         ],
                       ),

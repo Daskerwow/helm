@@ -26,7 +26,7 @@ class MarketScreen extends StatefulHelmWidget {
 
 class _MarketScreenState extends State<MarketScreen> {
   final _searchController = TextEditingController();
-  _SortMode _sort = _SortMode.volumeDesc;
+  _SortMode _sort = .volumeDesc;
   String _query = '';
 
   @override
@@ -44,15 +44,15 @@ class _MarketScreenState extends State<MarketScreen> {
 
     final list = [...filtered];
     switch (_sort) {
-      case _SortMode.volumeDesc:
+      case .volumeDesc:
         list.sort((a, b) => b.volumeQuote24h.compareTo(a.volumeQuote24h));
-      case _SortMode.changeDesc:
+      case .changeDesc:
         list.sort((a, b) => b.changePercent24h.compareTo(a.changePercent24h));
-      case _SortMode.changeAsc:
+      case .changeAsc:
         list.sort((a, b) => a.changePercent24h.compareTo(b.changePercent24h));
-      case _SortMode.priceDesc:
+      case .priceDesc:
         list.sort((a, b) => b.price.compareTo(a.price));
-      case _SortMode.name:
+      case .name:
         list.sort((a, b) => a.symbol.compareTo(b.symbol));
     }
     return list;
@@ -67,14 +67,8 @@ class _MarketScreenState extends State<MarketScreen> {
     // сортировку по цене/росту нечем было бы держать актуальной). Но
     // КАЖДАЯ строка внутри (AssetRow) сама решает, перерисовывать ли себя
     // — см. её докстринг, — поэтому лишнего рендера графиков тут нет.
-    final status = deps.marketFeature.select(
-      (s) => s.status,
-      key: #connectionStatus,
-    );
-
-    final tickers = deps.marketFeature.select(
-      (s) => s.orderedTickers,
-      key: #orderedTickers,
+    final (status, tickers) = deps.marketFeature.select(
+      (s) => (s.status, s.orderedTickers),
     );
 
     return Scaffold(

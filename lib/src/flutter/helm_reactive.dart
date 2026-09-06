@@ -41,28 +41,7 @@ class _StatefulHelmElement extends StatefulElement with HelmReactiveElement {
 
 enum _BindingKind { watch, select, effect }
 
-@immutable
-class _BindingKey {
-  const _BindingKey(this.feature, this.kind, this.explicitKey);
-
-  /// Сам токен [HelmFeature] — сравнивается по идентичности, не по `==`.
-  final Object feature;
-  final _BindingKind kind;
-
-  /// Различает несколько биндингов одного вида на одной фиче в одном
-  /// виджете — см. [HelmFeatureReactive.select].
-  final Object? explicitKey;
-
-  @override
-  bool operator ==(Object other) =>
-      other is _BindingKey &&
-      identical(other.feature, feature) &&
-      other.kind == kind &&
-      other.explicitKey == explicitKey;
-
-  @override
-  int get hashCode => Object.hash(identityHashCode(feature), kind, explicitKey);
-}
+typedef _BindingKey = (Object feature, _BindingKind kind);
 
 abstract class _Binding {
   void dispose();
@@ -254,12 +233,17 @@ class _EffectBinding<S, E> extends _FeatureBinding<S, E> {
 ///
 /// Классические хуки индексируют состояние по порядковому номеру вызова
 /// внутри `build()` — `useState` внутри `if`/цикла ломает всё. Здесь этой
-/// проблемы нет: у каждого биндинга уже есть стабильный между билдами ключ
-/// — сам объект [HelmFeature] (обычно `top-level final`). Биндинги хранятся
-/// в `Map`, поэтому `feature.watch()` можно звать условно, в цикле, где
-/// угодно; единственное, что нужно проговорить явно — [Object] key при
-/// нескольких разных биндингах одного вида на одной фиче в одном виджете
-/// (см. [HelmFeatureReactive.select]).
+/// проблемы нет вообще, а не только частично: ключ биндинга — пара (сам
+/// объект [HelmFeature], вид биндинга: watch/select/effect), она не
+/// зависит ни от места вызова, ни от их количества за билд. Поэтому
+/// `feature.watch()`/`.select()`/`.effect()` можно звать условно, в цикле,
+/// в любом порядке между перестройками — без ключа и без индексации.
+///
+/// Если из ОДНОЙ фичи в одном виджете нужно несколько независимых срезов —
+/// это не про порядок вызовов, а про то, что `select()` — один вызов на
+/// (фича × вид биндинга): несколько срезов собираются в один селектор,
+/// возвращающий `record` (структурное `==` по полям встроено в Dart 3) —
+/// см. докстринг [HelmFeatureReactive.select].
 ///
 /// Биндинги, не вызванные в очередном `build()`, автоматически
 /// освобождаются сразу после него — без утечек и ручного управления.
@@ -367,34 +351,35 @@ feature.watch()/.select()/.effect() можно вызывать только в�
 /// ```
 extension HelmFeatureReactive<S, E> on HelmFeature<S, E> {
   /// Подписка на весь `S` + ребилд при каждом изменении — аналог [HelmBuilder].
-  /// [key] нужен, только если на одной фиче зовётся несколько независимых
-  /// `watch()` в одном виджете — на практике почти никогда.
-  S watch({Object? key}) {
+  S watch() {
     final element = _requireElement();
-    final bindingKey = _BindingKey(this, _BindingKind.watch, key);
+    final key = (this, _BindingKind.watch);
     return element
         ._bindingFor(
-          bindingKey,
+          key,
           () => _WatchBinding<S, E>(this, element.markNeedsBuild),
         )
         .value;
   }
 
-  /// Точечная подписка по срезу состояния (`==`) — аналог [HelmSelector].
+  /// Точечная подписка по срезу состояния — аналог [HelmSelector].
   ///
-  /// [key] обязателен, если на одной фиче вызывается несколько разных
-  /// `select()` в одном виджете — иначе они делят биндинг и видят только
-  /// последний вызванный `selector`:
+  /// Если из ОДНОЙ фичи в одном виджете нужно несколько независимых срезов —
+  /// не зови `select()` повторно, а верни из одного селектора `record`:
+  /// сравнение "не изменилось" у `record` в Dart 3 уже структурное
+  /// (`(a, b) == (a, b)`), поэтому это работает без какого-либо
+  /// дополнительного API и без ключа:
   ///
   /// ```dart
-  /// final title = documentFeature.select((s) => s.title, key: #title);
-  /// final words = documentFeature.select((s) => s.body.length, key: #words);
+  /// final (status, ticker) = marketFeature.select(
+  ///   (s) => (s.status, s.tickerOf(selectedSymbol)),
+  /// );
   /// ```
-  R select<R>(R Function(S state) selector, {Object? key}) {
+  R select<R>(R Function(S state) selector) {
     final element = _requireElement();
-    final bindingKey = _BindingKey(this, _BindingKind.select, key);
+    final key = (this, _BindingKind.select);
     final binding = element._bindingFor(
-      bindingKey,
+      key,
       () => _SelectBinding<S, E, R>(this, selector, element.markNeedsBuild),
     );
     binding.selector = selector;
@@ -405,20 +390,26 @@ extension HelmFeatureReactive<S, E> on HelmFeature<S, E> {
     return binding.value;
   }
 
-  /// Побочный эффект на каждое изменение состояния — аналог [HelmListener],
-  /// но по состоянию, а не по эффектам; не вызывает ребилд. Первый вызов —
-  /// сразу после текущего кадра, последующие — на каждое изменение.
-  void effect(void Function(S state) callback, {Object? key}) {
+  /// Побочный эффект на каждое изменение состояния — аналог [HelmListener].
+  /// Несколько независимых реакций на одну фичу — не отдельные вызовы,
+  /// а ветвления внутри одного колбэка:
+  ///
+  /// ```dart
+  /// marketFeature.effect((s) {
+  ///   _logStatusChange(s.status);
+  ///   _syncTitle(s.title);
+  /// });
+  /// ```
+  void effect(void Function(S state) callback) {
     final element = _requireElement();
-    final bindingKey = _BindingKey(this, _BindingKind.effect, key);
+    final key = (this, _BindingKind.effect);
     final binding = element._bindingFor(
-      bindingKey,
+      key,
       () => _EffectBinding<S, E>(this, callback),
     );
     binding.effect = callback;
   }
 
-  /// Синхронное чтение без подписки — алиас [value], для симметрии с [watch].
-  /// Можно вызывать откуда угодно, не только из `build()`.
+  /// Синхронное чтение без подписки.
   S read() => value;
 }
