@@ -44,7 +44,7 @@ final class CancelToken {
   CancelReason? get reason => _reason;
 
   /// Отменяет токен. Повторный вызов — no-op: причина не перезаписывается.
-  void cancel([CancelReason reason = .userRequested]) {
+  void cancel([CancelReason reason = CancelReason.userRequested]) {
     if (_reason != null) return;
     _reason = reason;
 
@@ -57,7 +57,7 @@ final class CancelToken {
     // колбэка репортится тем же debug-only способом, что и диагностика
     // `GuardedWriter` — печатается в debug-режиме, но не прерывает вызов
     // остальных `whenCancelled`-колбэков и никогда не бросает наружу.
-    listeners?.notify(
+    listeners?.notifyListeners(
       (callback) => callback(),
       onError: (error, stackTrace) {
         assert(() {
@@ -85,6 +85,8 @@ final class CancelToken {
       callback();
       return;
     }
-    (_onCancelListeners ??= CallbackList<void Function()>()).add(callback);
+    (_onCancelListeners ??= CallbackList<void Function()>()).addListener(
+      callback,
+    );
   }
 }

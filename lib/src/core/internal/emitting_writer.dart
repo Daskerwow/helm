@@ -16,17 +16,15 @@ import '../state_access.dart';
 /// повторное чтение `IStateAccessor.current` — для хранилищ с дорогим
 /// чтением (например, Hive с шифрованием) это вдвое меньше IO на каждый
 /// коммит: было "прочитать + записать", стало только "записать".
-final class EmittingWriter<S> implements StateWriter<S> {
-  EmittingWriter(this._accessor, this._onChanged, this._equals)
-    : _lastState = _accessor.current;
-
-  final IStateAccessor<S> _accessor;
+final class EmittingWriter<S>(
+  final IStateAccessor<S> _accessor,
 
   /// Вызывается синхронно сразу после записи, только если значение реально
   /// отличается от предыдущего (см. [_equals]).
-  final void Function(S nextState) _onChanged;
-
-  final bool Function(S a, S b) _equals;
+  final void Function(S nextState) _onChanged,
+  final bool Function(S a, S b) _equals,
+) implements StateWriter<S> {
+  this : _lastState = _accessor.current;
 
   S _lastState;
 

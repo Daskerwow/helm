@@ -1,14 +1,14 @@
 import 'state_storage.dart';
 
 /// Право только на чтение состояния — передаётся запросам и наблюдателям.
-abstract interface class IStateReader<S> {
+abstract interface class StateReader<S> {
   S get current;
 }
 
 /// Право только на запись состояния — передаётся командам.
 ///
 /// Принцип минимальных привилегий (ISP): команда не может прочитать
-/// устаревший снапшот мимо [IStateReader], а наблюдатель не может изменить
+/// устаревший снапшот мимо [StateReader], а наблюдатель не может изменить
 /// состояние.
 abstract interface class StateWriter<S> {
   /// Фиксирует новое состояние. `StateStore` эмитирует обновление
@@ -18,10 +18,10 @@ abstract interface class StateWriter<S> {
 
 /// Полный доступ: чтение и запись.
 abstract interface class IStateAccessor<S>
-    implements IStateReader<S>, StateWriter<S> {}
+    implements StateReader<S>, StateWriter<S> {}
 
-/// Адаптер [IStateAccessor] → [IStateStorage] — без бизнес-логики.
-final class const StateAccessor<S>(final IStateStorage<S> _storage)
+/// Адаптер [IStateAccessor] → [StateStorage] — без бизнес-логики.
+final class const StateAccessor<S>(final StateStorage<S> _storage)
     implements IStateAccessor<S> {
   @override
   S get current => _storage.read();

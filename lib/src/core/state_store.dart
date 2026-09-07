@@ -73,25 +73,26 @@ final class _ListenerHub<S, E> {
   /// повторный отчёт.
   bool _reportingError = false;
 
-  void notifyChange(S state) => changes.notify(
+  void notifyChange(S state) => changes.notifyListeners(
     (listener) => listener(state),
     onError: _reportListenerError,
   );
 
-  void notifyEffect(E effect) => effects.notify(
+  void notifyEffect(E effect) => effects.notifyListeners(
     (listener) => listener(effect),
     onError: _reportListenerError,
   );
 
-  void notifyDispatch(DispatchEvent<S> event) => dispatches.notify(
+  void notifyDispatch(DispatchEvent<S> event) => dispatches.notifyListeners(
     (listener) => listener(event),
     onError: _reportListenerError,
   );
 
-  void notifyError(Object error, StackTrace stackTrace) => errors.notify(
-    (listener) => listener(error, stackTrace),
-    onError: _reportListenerError,
-  );
+  void notifyError(Object error, StackTrace stackTrace) =>
+      errors.notifyListeners(
+        (listener) => listener(error, stackTrace),
+        onError: _reportListenerError,
+      );
 
   void _reportListenerError(Object error, StackTrace stackTrace) {
     if (_reportingError) {
@@ -107,7 +108,7 @@ final class _ListenerHub<S, E> {
 
     _reportingError = true;
     try {
-      errors.notify((listener) => listener(error, stackTrace));
+      errors.notifyListeners((listener) => listener(error, stackTrace));
     } catch (_) {
       // errors.notify() здесь вызван без onError — если он всё же
       // пробросил исключение (например, только один listener и он упал),
@@ -119,10 +120,10 @@ final class _ListenerHub<S, E> {
   }
 
   void clear() {
-    changes.clear();
-    effects.clear();
-    dispatches.clear();
-    errors.clear();
+    changes.clearListener();
+    effects.clearListener();
+    dispatches.clearListener();
+    errors.clearListener();
   }
 }
 
@@ -211,7 +212,7 @@ final class StateStore<S, E> {
   /// из-за коммита после отмены async-команды, работающий и в release.
   StateStore({
     required S initialState,
-    IStateStorage<S>? storage,
+    StateStorage<S>? storage,
     bool Function(S a, S b)? equals,
     this.logStreamEvents = true,
     this._onDroppedCommit,
@@ -221,7 +222,7 @@ final class StateStore<S, E> {
   /// Создаёт Store из готового хранилища — начальное состояние берётся из
   /// `storage.read()`.
   StateStore.fromStorage(
-    IStateStorage<S> storage, {
+    StateStorage<S> storage, {
     this.logStreamEvents = true,
     bool Function(S a, S b)? equals,
     this._onDroppedCommit,
@@ -265,15 +266,15 @@ final class StateStore<S, E> {
   /// Регистрирует слушателя каждого реального изменения состояния —
   /// сравнение по компаратору из конструктора. Возвращает функцию отписки.
   void Function() addOnChanged(void Function(S state) listener) {
-    _listeners.changes.add(listener);
-    return () => _listeners.changes.remove(listener);
+    _listeners.changes.addListener(listener);
+    return () => _listeners.changes.removeListener(listener);
   }
 
   /// Регистрирует слушателя каждого эмитированного side-эффекта. Возвращает
   /// функцию отписки.
   void Function() addOnEffect(void Function(E effect) listener) {
-    _listeners.effects.add(listener);
-    return () => _listeners.effects.remove(listener);
+    _listeners.effects.addListener(listener);
+    return () => _listeners.effects.removeListener(listener);
   }
 
   /// Регистрирует слушателя каждого dispatch — при успехе, ошибке и отмене.
@@ -285,8 +286,8 @@ final class StateStore<S, E> {
   void Function() addDispatchListener(
     void Function(DispatchEvent<S> event) listener,
   ) {
-    _listeners.dispatches.add(listener);
-    return () => _listeners.dispatches.remove(listener);
+    _listeners.dispatches.addListener(listener);
+    return () => _listeners.dispatches.removeListener(listener);
   }
 
   /// Именованная альтернатива [addDispatchListener] — см. докстринг класса,
@@ -300,8 +301,8 @@ final class StateStore<S, E> {
   void Function() addErrorListener(
     void Function(Object error, StackTrace stackTrace) listener,
   ) {
-    _listeners.errors.add(listener);
-    return () => _listeners.errors.remove(listener);
+    _listeners.errors.addListener(listener);
+    return () => _listeners.errors.removeListener(listener);
   }
 
   /// Broadcast-`Stream` состояний — интероп-слой поверх [addOnChanged] для
@@ -378,7 +379,7 @@ final class StateStore<S, E> {
 
   /// Подписывается на Stream-команду с side-эффектами. Та же семантика
   /// отмены предыдущей подписки, что и у [dispatchStream].
-  void dispatchStreamWithEffect(IStreamSideEffect<S, E> command) =>
+  void dispatchStreamWithEffect(StreamSideEffect<S, E> command) =>
       _dispatchStream(
         command,
         (writer) => command.execute(_accessor, writer).map((effect) {

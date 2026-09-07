@@ -32,23 +32,18 @@
 /// Передай `equals` в `StateStore`/`HelmComputed`, построенный поверх
 /// `listEquals`/`setEquals`/`mapEquals`/`deepEquals` из `equality.dart` —
 /// см. их докстринги.
-sealed class Loadable<T> {
-  const Loadable();
-
-  const factory Loadable.idle() = LoadableIdle<T>;
+sealed class const Loadable<T>() {
+  const factory idle() = LoadableIdle<T>;
 
   /// [previous] — последнее успешно загруженное значение, если было:
   /// позволяет показать старые данные поверх спиннера (pull-to-refresh).
-  const factory Loadable.loading([T? previous]) = LoadableLoading<T>;
+  const factory loading([T? previous]) = LoadableLoading<T>;
 
-  const factory Loadable.data(T value) = LoadableData<T>;
+  const factory data(T value) = LoadableData<T>;
 
   /// [previous] — то же, что и в [Loadable.loading].
-  const factory Loadable.error(
-    Object error, [
-    StackTrace? stackTrace,
-    T? previous,
-  ]) = LoadableError<T>;
+  const factory error(Object error, [StackTrace? stackTrace, T? previous]) =
+      LoadableError<T>;
 
   bool get isLoading => this is LoadableLoading<T>;
   bool get isError => this is LoadableError<T>;
@@ -110,9 +105,7 @@ sealed class Loadable<T> {
   };
 }
 
-final class LoadableIdle<T> extends Loadable<T> {
-  const LoadableIdle();
-
+final class const LoadableIdle<T>() extends Loadable<T> {
   @override
   bool operator ==(Object other) => other is LoadableIdle<T>;
 
@@ -123,11 +116,7 @@ final class LoadableIdle<T> extends Loadable<T> {
   String toString() => 'Loadable.idle()';
 }
 
-final class LoadableLoading<T> extends Loadable<T> {
-  const LoadableLoading([this.previous]);
-
-  final T? previous;
-
+final class const LoadableLoading<T>([final T? previous]) extends Loadable<T> {
   @override
   bool operator ==(Object other) =>
       other is LoadableLoading<T> && other.previous == previous;
@@ -139,11 +128,7 @@ final class LoadableLoading<T> extends Loadable<T> {
   String toString() => 'Loadable.loading(previous: $previous)';
 }
 
-final class LoadableData<T> extends Loadable<T> {
-  const LoadableData(this.value);
-
-  final T value;
-
+final class const LoadableData<T>(final T value) extends Loadable<T> {
   @override
   bool operator ==(Object other) =>
       other is LoadableData<T> && other.value == value;
@@ -155,13 +140,11 @@ final class LoadableData<T> extends Loadable<T> {
   String toString() => 'Loadable.data($value)';
 }
 
-final class LoadableError<T> extends Loadable<T> {
-  const LoadableError(this.error, [this.stackTrace, this.previous]);
-
-  final Object error;
-  final StackTrace? stackTrace;
-  final T? previous;
-
+final class const LoadableError<T>(
+  final Object error, [
+  final StackTrace? stackTrace,
+  final T? previous,
+]) extends Loadable<T> {
   /// Сравнивает [error], [stackTrace] и [previous]. `StackTrace` не
   /// переопределяет `==` содержательно (сравнение по идентичности) — это
   /// заодно отличает повторный тот же коммит (тот же `StackTrace` инстанс)

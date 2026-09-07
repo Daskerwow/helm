@@ -51,7 +51,7 @@ abstract interface class SyncSideEffect<S, E> {
 /// ```
 abstract interface class AsyncSideEffect<S, E> {
   Future<E?> execute(
-    IStateReader<S> reader,
+    StateReader<S> reader,
     StateWriter<S> writer,
     CancelToken cancel,
   );
@@ -72,6 +72,6 @@ abstract interface class AsyncSideEffect<S, E> {
 ///       });
 /// }
 /// ```
-abstract interface class IStreamSideEffect<S, E> {
-  Stream<E?> execute(IStateReader<S> reader, StateWriter<S> writer);
+abstract interface class StreamSideEffect<S, E> {
+  Stream<E?> execute(StateReader<S> reader, StateWriter<S> writer);
 }

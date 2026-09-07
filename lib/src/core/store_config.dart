@@ -40,7 +40,7 @@ final class StoreConfig<S, E> {
   final void Function(DispatchEvent<S> event)? onDispatch;
 
   /// Персистентное хранилище. Если `null` — [StateMemoryStorage].
-  final IStateStorage<S>? storage;
+  final StateStorage<S>? storage;
 
   /// См. `StateStore.new` — по умолчанию `true`. Выключи, если поток шлёт
   /// значения очень часто и отдельный `DispatchEvent` на каждую итерацию не

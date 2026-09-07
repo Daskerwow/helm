@@ -12,12 +12,10 @@ import '../state_access.dart';
 /// [EmittingWriter] как `_inner` и просто делегирует каждый [commit], так
 /// что в поток состояний уходит любое изменение сразу, независимо от
 /// группировки по итерациям.
-final class TrackingWriter<S> implements StateWriter<S> {
-  TrackingWriter(this._inner, this._reader);
-
-  final StateWriter<S> _inner;
-  final IStateReader<S> _reader;
-
+final class TrackingWriter<S>(
+  final StateWriter<S> _inner,
+  final StateReader<S> _reader,
+) implements StateWriter<S> {
   bool _changed = false;
   bool _captured = false;
   late S _before;

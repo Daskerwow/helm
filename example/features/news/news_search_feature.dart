@@ -37,7 +37,7 @@ final class SearchByAuthorCommand implements AsyncCommand<NewsSearchState> {
 
   @override
   Future<void> execute(
-    IStateReader<NewsSearchState> reader,
+    StateReader<NewsSearchState> reader,
     StateWriter<NewsSearchState> writer,
     CancelToken cancel,
   ) async {

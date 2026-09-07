@@ -14,7 +14,7 @@ import 'command.dart';
 /// остаётся только решить, что делать с результатом на уровне конкретной
 /// команды (ничего, rethrow, side-эффект).
 Future<void> _runLoadable<T>({
-  required IStateReader<Loadable<T>> reader,
+  required StateReader<Loadable<T>> reader,
   required StateWriter<Loadable<T>> writer,
   required CancelToken cancel,
   required Future<T> Function() load,
@@ -50,13 +50,11 @@ Future<void> _runLoadable<T>({
 /// ```dart
 /// store.dispatch(LoadCommand(() => api.fetchTodos()));
 /// ```
-final class LoadCommand<T> implements AsyncCommand<Loadable<T>> {
-  const LoadCommand(this.load);
-  final Future<T> Function() load;
-
+final class const LoadCommand<T>(final Future<T> Function() load)
+    implements AsyncCommand<Loadable<T>> {
   @override
   Future<void> execute(
-    IStateReader<Loadable<T>> reader,
+    StateReader<Loadable<T>> reader,
     StateWriter<Loadable<T>> writer,
     CancelToken cancel,
   ) => _runLoadable<T>(
@@ -73,17 +71,14 @@ final class LoadCommand<T> implements AsyncCommand<Loadable<T>> {
 
 /// Как [LoadCommand], но ошибка превращается в side-эффект (например,
 /// показ SnackBar) вместо переброса исключения.
-final class LoadWithEffectCommand<T, E>
-    implements AsyncSideEffect<Loadable<T>, E> {
-  const LoadWithEffectCommand(this.load, {this.onSuccess, this.onError});
-
-  final Future<T> Function() load;
-  final E? Function(T value)? onSuccess;
-  final E? Function(Object error, StackTrace stackTrace)? onError;
-
+final class const LoadWithEffectCommand<T, E>(
+  final Future<T> Function() load, {
+  final E? Function(T value)? onSuccess,
+  final E? Function(Object error, StackTrace stackTrace)? onError,
+}) implements AsyncSideEffect<Loadable<T>, E> {
   @override
   Future<E?> execute(
-    IStateReader<Loadable<T>> reader,
+    StateReader<Loadable<T>> reader,
     StateWriter<Loadable<T>> writer,
     CancelToken cancel,
   ) async {
@@ -120,16 +115,13 @@ final class LoadWithEffectCommand<T, E>
 /// ```dart
 /// store.dispatchStream(WatchCommand(() => socket.messages));
 /// ```
-final class WatchCommand<T> implements StreamCommand<Loadable<T>> {
-  const WatchCommand(this.source);
-
-  /// Строит `Stream` при каждой подписке, а не готовый `Stream`, чтобы
-  /// повторный `StateStore.dispatchStream` пересоздавал подписку с нуля.
-  final Stream<T> Function() source;
-
+/// Строит `Stream` при каждой подписке, а не готовый `Stream`, чтобы
+/// повторный `StateStore.dispatchStream` пересоздавал подписку с нуля.
+final class const WatchCommand<T>(final Stream<T> Function() source)
+    implements StreamCommand<Loadable<T>> {
   @override
   Stream<void> execute(
-    IStateReader<Loadable<T>> reader,
+    StateReader<Loadable<T>> reader,
     StateWriter<Loadable<T>> writer,
   ) {
     if (reader.current is! LoadableData<T>) {

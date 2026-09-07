@@ -26,25 +26,18 @@ import '../cancel_token.dart';
 ///
 /// В любом случае коммит после отмены остаётся тихим и безопасным исходом:
 /// [commit] никогда не бросает исключение из-за самой диагностики.
-final class GuardedWriter<S> implements StateWriter<S> {
-  const GuardedWriter(
-    this._inner,
-    this._token,
-    this._commandLabel, {
-    this._onDroppedCommit,
-  });
-
-  final StateWriter<S> _inner;
-  final CancelToken _token;
+final class const GuardedWriter<S>(
+  final StateWriter<S> _inner,
+  final CancelToken _token,
 
   /// Имя команды для debug-сообщения — см. `DispatchLabeled`. Передаётся
   /// явно из `StateStore`, а не через `$runtimeType`, который для этого
   /// класса всегда показал бы `GuardedWriter<S>`, а не саму команду.
-  final String _commandLabel;
+  final String _commandLabel, {
 
   /// См. докстринг класса, раздел "Диагностика отброшенного коммита".
-  final void Function(String commandLabel, S nextState)? _onDroppedCommit;
-
+  final void Function(String commandLabel, S nextState)? _onDroppedCommit,
+}) implements StateWriter<S> {
   @override
   void commit(S nextState) {
     if (_token.isCancelled) {

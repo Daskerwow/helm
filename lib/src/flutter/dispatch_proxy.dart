@@ -37,7 +37,7 @@ mixin DispatchProxy<S, E> {
   void dispatchStream(StreamCommand<S> command) =>
       dispatchTarget.dispatchStream(command);
 
-  void dispatchStreamWithEffect(IStreamSideEffect<S, E> command) =>
+  void dispatchStreamWithEffect(StreamSideEffect<S, E> command) =>
       dispatchTarget.dispatchStreamWithEffect(command);
 
   void cancel<U>() => dispatchTarget.cancel<U>();

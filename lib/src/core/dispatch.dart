@@ -54,40 +54,30 @@ abstract interface class DispatchLabeled {
 ///   if (event.error != null) Sentry.captureException(event.error!);
 /// });
 /// ```
-final class DispatchEvent<S> {
-  const DispatchEvent({
-    required this.commandLabel,
-    required this.before,
-    required this.after,
-    required this.kind,
-    this.error,
-    this.elapsed,
-    this.cancelReason,
-  });
-
+final class const DispatchEvent<S>({
   /// Имя команды — см. [DispatchLabeled].
-  final String commandLabel;
+  required final String commandLabel,
 
   /// Состояние до выполнения команды.
-  final S before;
+  required final S before,
 
   /// Состояние после выполнения. При ошибке/отмене без коммита равно [before].
-  final S after;
+  required final S after,
 
   /// { sync, async, stream }
-  final DispatchKind kind;
+  required final DispatchKind kind,
 
   /// Исключение, если команда завершилась с ошибкой.
-  final Object? error;
+  final Object? error,
 
   /// Время выполнения. `null` для sync-команд (выполняются мгновенно) и
   /// когда никто не подписан на `StateStore.addDispatchListener` — замер не
   /// делается впустую.
-  final Duration? elapsed;
+  final Duration? elapsed,
 
   /// Причина отмены. `null`, если команда не была отменена.
-  final CancelReason? cancelReason;
-
+  final CancelReason? cancelReason,
+}) {
   bool get isSuccess => error == null && cancelReason == null;
   bool get isCancelled => cancelReason != null;
 

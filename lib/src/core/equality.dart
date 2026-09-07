@@ -20,11 +20,8 @@ bool defaultEquals<T>(T a, T b) => a == b;
 /// корректный хэш для двух объектов, равных по кастомному [_equals], но не
 /// по `==`, в общем случае построить нельзя без отдельной хэш-функции от
 /// пользователя.
-final class _FunctionEquality<T> implements Equality<T> {
-  const _FunctionEquality(this._equals);
-
-  final bool Function(T a, T b) _equals;
-
+final class const _FunctionEquality<T>(final bool Function(T a, T b) _equals)
+    implements Equality<T> {
   @override
   bool equals(T e1, T e2) => _equals(e1, e2);
 

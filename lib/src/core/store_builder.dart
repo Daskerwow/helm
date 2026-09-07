@@ -27,7 +27,7 @@ final class StoreBuilder<S, E> {
   StoreBuilder(this._initialState);
 
   final S _initialState;
-  IStateStorage<S>? _storage;
+  StateStorage<S>? _storage;
   bool _storageSet = false;
   bool Function(S a, S b)? _equals;
   bool _logStreamEvents = true;
@@ -68,7 +68,7 @@ final class StoreBuilder<S, E> {
 
   /// Персистентное хранилище — без вызова используется [StateMemoryStorage].
   /// Можно вызвать только один раз.
-  StoreBuilder<S, E> withStorage(IStateStorage<S> storage) {
+  StoreBuilder<S, E> withStorage(StateStorage<S> storage) {
     assert(!_storageSet, 'withStorage уже вызван');
     _storage = storage;
     _storageSet = true;

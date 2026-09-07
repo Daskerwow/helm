@@ -10,13 +10,13 @@
 /// на диск делай как побочный эффект в `onChanged`/команде, а не в
 /// [write]. Это сознательное ограничение: Store — это runtime-состояние
 /// в памяти с быстрым синхронным доступом, а не ORM.
-abstract interface class IStateStorage<S> {
+abstract interface class StateStorage<S> {
   S read();
   void write(S state);
 }
 
 /// Хранилище состояния в памяти — реализация по умолчанию.
-final class StateMemoryStorage<S>(var S _state) implements IStateStorage<S> {
+final class StateMemoryStorage<S>(var S _state) implements StateStorage<S> {
   @override
   S read() => _state;
 

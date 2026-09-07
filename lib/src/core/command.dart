@@ -38,7 +38,7 @@ abstract interface class SyncCommand<S> {
 /// ```
 abstract interface class AsyncCommand<S> {
   Future<void> execute(
-    IStateReader<S> reader,
+    StateReader<S> reader,
     StateWriter<S> writer,
     CancelToken cancel,
   );
@@ -64,7 +64,7 @@ abstract interface class AsyncCommand<S> {
 /// store.cancelStream<LocationStreamCommand>();
 /// ```
 abstract interface class StreamCommand<S> {
-  Stream<void> execute(IStateReader<S> reader, StateWriter<S> writer);
+  Stream<void> execute(StateReader<S> reader, StateWriter<S> writer);
 }
 
 /// Заменяет состояние на заранее известное значение — без отдельного класса
@@ -73,10 +73,7 @@ abstract interface class StreamCommand<S> {
 /// ```dart
 /// store.dispatchSync(SetStateCommand(FilterZone.all));
 /// ```
-final class SetStateCommand<S> implements SyncCommand<S> {
-  const SetStateCommand(this.next);
-  final S next;
-
+final class const SetStateCommand<S>(final S next) implements SyncCommand<S> {
   @override
   S execute(S current) => next;
 }
@@ -87,30 +84,26 @@ final class SetStateCommand<S> implements SyncCommand<S> {
 /// ```dart
 /// store.dispatchSync(UpdateStateCommand((s) => s.copyWith(isOpen: !s.isOpen)));
 /// ```
-final class UpdateStateCommand<S> implements SyncCommand<S> {
-  const UpdateStateCommand(this.update);
-  final S Function(S current) update;
-
+final class const UpdateStateCommand<S>(final S Function(S current) update)
+    implements SyncCommand<S> {
   @override
   S execute(S current) => update(current);
 }
 
 /// Как [SetStateCommand], но дополнительно эмитирует side-эффект.
-final class SetStateWithEffectCommand<S, E> implements SyncSideEffect<S, E> {
-  const SetStateWithEffectCommand(this.next, {this.effect});
-  final S next;
-  final E? effect;
-
+final class const SetStateWithEffectCommand<S, E>(
+  final S next, {
+  final E? effect,
+}) implements SyncSideEffect<S, E> {
   @override
   SyncSideEffectResult<S, E> execute(S current) => (next, effect);
 }
 
 /// Как [UpdateStateCommand], но функция сразу возвращает и состояние, и
 /// опциональный эффект — для случаев, когда эффект зависит от результата.
-final class UpdateStateWithEffectCommand<S, E> implements SyncSideEffect<S, E> {
-  const UpdateStateWithEffectCommand(this.update);
-  final SyncSideEffectResult<S, E> Function(S current) update;
-
+final class const UpdateStateWithEffectCommand<S, E>(
+  final SyncSideEffectResult<S, E> Function(S current) update,
+) implements SyncSideEffect<S, E> {
   @override
   SyncSideEffectResult<S, E> execute(S current) => update(current);
 }
@@ -121,13 +114,11 @@ final class UpdateStateWithEffectCommand<S, E> implements SyncSideEffect<S, E> {
 /// ```dart
 /// store.dispatch(LoadStateCommand(() => repository.fetchFilterZones()));
 /// ```
-final class LoadStateCommand<S> implements AsyncCommand<S> {
-  const LoadStateCommand(this.load);
-  final Future<S> Function() load;
-
+final class const LoadStateCommand<S>(final Future<S> Function() load)
+    implements AsyncCommand<S> {
   @override
   Future<void> execute(
-    IStateReader<S> reader,
+    StateReader<S> reader,
     StateWriter<S> writer,
     CancelToken cancel,
   ) async {
@@ -139,10 +130,8 @@ final class LoadStateCommand<S> implements AsyncCommand<S> {
 
 /// Эмитирует side-эффект, не трогая состояние — навигация, диалог,
 /// аналитическое событие.
-final class EmitEffectCommand<S, E> implements SyncSideEffect<S, E> {
-  const EmitEffectCommand(this.effect);
-  final E effect;
-
+final class const EmitEffectCommand<S, E>(final E effect)
+    implements SyncSideEffect<S, E> {
   @override
   SyncSideEffectResult<S, E> execute(S current) => (current, effect);
 }
