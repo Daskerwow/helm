@@ -2,20 +2,12 @@ import 'package:dio/dio.dart';
 
 /// Точка свечи для графика — время + цена закрытия, обе оси нужны
 /// `fl_chart` для нормальных подписей по X.
-final class ClosePoint {
-  const ClosePoint(this.time, this.close);
-  final DateTime time;
-  final double close;
-}
+final class const ClosePoint(final DateTime time, final double close);
 
 /// Публичный REST-эндпоинт Binance, ключей не требует. Используется и для
 /// бэкфилла графика на детальном экране, и для главного графика на
 /// дашборде.
-final class MarketKlinesApi {
-  const MarketKlinesApi(this._dio);
-
-  final Dio _dio;
-
+final class const MarketKlinesApi(final Dio _dio) {
   Future<List<ClosePoint>> fetchRecentCloses(
     String symbol, {
     String interval = '1h',

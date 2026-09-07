@@ -1,23 +1,14 @@
 /// Снимок рыночных данных по одной паре: цена + 24-часовая сводка.
-final class Ticker {
-  const Ticker({
-    required this.symbol,
-    required this.price,
-    required this.changePercent24h,
-    required this.high24h,
-    required this.low24h,
-    required this.volumeQuote24h,
-  });
-
-  final String symbol;
-  final double price;
-  final double changePercent24h;
-  final double high24h;
-  final double low24h;
+final class const Ticker({
+  required final String symbol,
+  required final double price,
+  required final double changePercent24h,
+  required final double high24h,
+  required final double low24h,
 
   /// Объём торгов за 24ч в котируемой валюте (USDT) — уже в долларах.
-  final double volumeQuote24h;
-
+  required final double volumeQuote24h,
+}) {
   bool get isUp => changePercent24h >= 0;
 
   @override

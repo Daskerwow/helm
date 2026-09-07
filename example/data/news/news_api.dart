@@ -1,19 +1,12 @@
 import 'package:dio/dio.dart';
 
-final class Article {
-  const Article({
-    required this.id,
-    required this.authorId,
-    required this.title,
-    required this.body,
-  });
-
-  final int id;
-  final int authorId;
-  final String title;
-  final String body;
-
-  factory Article.fromJson(Map<String, dynamic> json) => Article(
+final class const Article({
+  required final int id,
+  required final int authorId,
+  required final String title,
+  required final String body,
+}) {
+  factory fromJson(Map<String, dynamic> json) => Article(
     id: json['id'] as int,
     authorId: json['userId'] as int,
     title: json['title'] as String,
@@ -31,11 +24,7 @@ final class Article {
   int get hashCode => Object.hash(id, title, body);
 }
 
-final class NewsApi {
-  const NewsApi(this._dio);
-
-  final Dio _dio;
-
+final class const NewsApi(final Dio _dio) {
   Future<List<Article>> fetchAll() async {
     final response = await _dio.get<List<dynamic>>('/posts');
     final data = response.data ?? const [];

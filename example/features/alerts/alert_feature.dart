@@ -3,15 +3,10 @@ import 'package:helm/flutter.dart';
 
 import '../market/market_state.dart';
 
-final class AlertState {
-  const AlertState({
-    this.thresholds = const {'btcusdt': 70000},
-    this.armed = const {},
-  });
-
-  final Map<String, double> thresholds;
-  final Map<String, bool> armed;
-
+final class const AlertState({
+  final Map<String, double> thresholds = const {'btcusdt': 70000},
+  final Map<String, bool> armed = const {},
+}) {
   double? thresholdOf(String symbol) => thresholds[symbol];
 
   AlertState copyWith({
@@ -23,27 +18,24 @@ final class AlertState {
   );
 }
 
-sealed class AlertEffect {}
+sealed class const AlertEffect();
 
-final class PriceCrossedThreshold extends AlertEffect {
-  PriceCrossedThreshold(this.symbol, this.price, this.threshold);
-  final String symbol;
-  final double price;
-  final double threshold;
-}
+final class const PriceCrossedThreshold(
+  final String symbol,
+  final double price,
+  final double threshold,
+) extends AlertEffect;
 
 /// Несколько валют могут пересечь порог в один и тот же тик — эмитим все
 /// сразу, а не теряем часть из них.
-final class MultiplePricesCrossedThreshold extends AlertEffect {
-  MultiplePricesCrossedThreshold(this.crossings);
-  final List<PriceCrossedThreshold> crossings;
-}
+final class const MultiplePricesCrossedThreshold(
+  final List<PriceCrossedThreshold> crossings,
+) extends AlertEffect;
 
-final class SetThresholdCommand implements SyncCommand<AlertState> {
-  const SetThresholdCommand(this.symbol, this.threshold);
-  final String symbol;
-  final double threshold;
-
+final class const SetThresholdCommand(
+  final String symbol,
+  final double threshold,
+) implements SyncCommand<AlertState> {
   @override
   AlertState execute(AlertState current) {
     final next = Map<String, double>.of(current.thresholds)
@@ -52,10 +44,8 @@ final class SetThresholdCommand implements SyncCommand<AlertState> {
   }
 }
 
-final class ClearThresholdCommand implements SyncCommand<AlertState> {
-  const ClearThresholdCommand(this.symbol);
-  final String symbol;
-
+final class const ClearThresholdCommand(final String symbol)
+    implements SyncCommand<AlertState> {
   @override
   AlertState execute(AlertState current) {
     final thresholds = Map<String, double>.of(current.thresholds)
@@ -65,11 +55,8 @@ final class ClearThresholdCommand implements SyncCommand<AlertState> {
   }
 }
 
-final class _CheckPricesCommand
+final class const _CheckPricesCommand(final Map<String, double> prices)
     implements SyncSideEffect<AlertState, AlertEffect> {
-  const _CheckPricesCommand(this.prices);
-  final Map<String, double> prices;
-
   @override
   SyncSideEffectResult<AlertState, AlertEffect> execute(AlertState current) {
     final nextArmed = Map<String, bool>.of(current.armed);

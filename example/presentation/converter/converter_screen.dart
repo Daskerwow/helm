@@ -35,9 +35,8 @@ class _ConverterScreenState extends State<ConverterScreen> {
           children: [
             Text(
               'Конвертер',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: .w700),
+              style: Theme.of(context).textTheme.headlineSmall
+                  ?.copyWith(fontWeight: .w700),
             ),
             const SizedBox(height: 24),
             Center(
@@ -52,7 +51,7 @@ class _ConverterScreenState extends State<ConverterScreen> {
                       builder: (context, tickers) {
                         if (tickers.isEmpty) {
                           return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 32),
+                            padding: .symmetric(vertical: 32),
                             child: Center(child: Text('Загрузка котировок…')),
                           );
                         }

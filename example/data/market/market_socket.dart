@@ -15,10 +15,7 @@ final class MarketSocketConnected extends MarketSocketEvent {}
 
 final class MarketSocketReconnecting extends MarketSocketEvent {}
 
-final class MarketTickerUpdated extends MarketSocketEvent {
-  MarketTickerUpdated(this.ticker);
-  final Ticker ticker;
-}
+final class MarketTickerUpdated(final Ticker ticker) extends MarketSocketEvent;
 
 /// Обёртка над комбинированным (multiplexed) стримом Binance:
 /// `wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker/...`
@@ -30,11 +27,7 @@ final class MarketTickerUpdated extends MarketSocketEvent {
 /// Никогда не завершается ошибкой наружу — при обрыве уходит в цикл
 /// переподключения с экспоненциальной задержкой (1s → 2s → ... → 30s),
 /// сообщая об этом через [MarketSocketReconnecting].
-final class MarketSocket {
-  const MarketSocket({this.symbols = curatedSymbols});
-
-  final List<String> symbols;
-
+final class const MarketSocket({final List<String> symbols = curatedSymbols}) {
   static const _backoffSeconds = [1, 2, 4, 8, 16, 30];
 
   Uri get _uri {
