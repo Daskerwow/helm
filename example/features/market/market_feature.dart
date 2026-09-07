@@ -6,11 +6,8 @@ import 'package:helm/flutter.dart';
 import '../../data/market/market_socket.dart';
 import 'market_state.dart';
 
-final class WatchMarketCommand implements StreamCommand<MarketState> {
-  const WatchMarketCommand(this._socket);
-
-  final MarketSocket _socket;
-
+final class const WatchMarketCommand(final MarketSocket _socket)
+    implements StreamCommand<MarketState> {
   @override
   Stream<void> execute(
     StateReader<MarketState> reader,

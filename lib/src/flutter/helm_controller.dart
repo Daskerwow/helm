@@ -17,16 +17,17 @@ import 'dispatch_proxy.dart';
 ///
 /// Весь dispatch-API (`dispatch`, `dispatchSync`, `cancel` и т.д.) даёт
 /// миксин [DispatchProxy] — здесь достаточно указать, куда его пробрасывать.
-final class HelmController<S, E> extends ChangeNotifier
-    with DispatchProxy<S, E>
-    implements ValueListenable<S> {
-  HelmController(this.store) {
-    _unsubscribe = store.addOnChanged((_) => notifyListeners());
-  }
-
+final class HelmController<S, E>(
   /// Store текущей фичи. Для диспатча используй методы [HelmFeature] — они
   /// короче и не требуют явного `.store`.
-  final StateStore<S, E> store;
+  final StateStore<S, E> store,
+) extends ChangeNotifier
+    with DispatchProxy<S, E>
+    implements ValueListenable<S> {
+  /// Тело конструктора
+  this {
+    _unsubscribe = store.addOnChanged((_) => notifyListeners());
+  }
 
   @override
   StateStore<S, E> get dispatchTarget => store;

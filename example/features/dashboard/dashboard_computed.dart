@@ -6,23 +6,14 @@ import '../alerts/alert_feature.dart';
 import '../market/market_state.dart';
 import '../watchlist/watchlist_feature.dart';
 
-final class DashboardSummary {
-  const DashboardSummary({
-    required this.watchedCount,
-    required this.armedAlertsCount,
-    required this.newsCount,
-    required this.totalVolume24h,
-    required this.topGainers,
-    required this.topLosers,
-  });
-
-  final int watchedCount;
-  final int armedAlertsCount;
-  final int newsCount;
-  final double totalVolume24h;
-  final List<Ticker> topGainers;
-  final List<Ticker> topLosers;
-}
+final class const DashboardSummary({
+  required final int watchedCount,
+  required final int armedAlertsCount,
+  required final int newsCount,
+  required final double totalVolume24h,
+  required final List<Ticker> topGainers,
+  required final List<Ticker> topLosers,
+});
 
 /// Без переопределения `==`/`hashCode` в `DashboardSummary` — намеренно:
 /// каждый пересчёт создаёт новый объект, `HelmComputed` со стандартным

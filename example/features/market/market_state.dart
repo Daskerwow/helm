@@ -16,26 +16,20 @@ enum ConnectionStatus { connecting, live, reconnecting }
 /// собственные данные реально изменились — а не на любой тик рынка.
 typedef AssetRowData = ({Ticker ticker, List<double> history});
 
-final class MarketState {
-  const MarketState({
-    this.status = .connecting,
-    this.tickers = const {},
-    this.history = const {},
-  });
-
-  final ConnectionStatus status;
+final class const MarketState({
+  final ConnectionStatus status = .connecting,
 
   /// Ключ — символ в нижнем регистре ('btcusdt'). Ограничен `curatedSymbols`
   /// — сокет и не подписывается на что-то ещё (см. `MarketSocket`).
-  final Map<String, Ticker> tickers;
+  final Map<String, Ticker> tickers = const {},
 
   /// Скользящее окно последних цен на символ (для спарклайнов). Живёт в
   /// Store, а не в `State` виджета — Store в `helm` уже является
   /// единственным источником истины и сам решает, когда что изменилось;
   /// держать копию истории в виджете означало бы два источника истины и
   /// ручную синхронизацию между ними через `initState`/`didUpdateWidget`.
-  final Map<String, List<double>> history;
-
+  final Map<String, List<double>> history = const {},
+}) {
   Ticker? tickerOf(String symbol) => tickers[symbol];
   double? priceOf(String symbol) => tickers[symbol]?.price;
   List<double> historyOf(String symbol) => history[symbol] ?? const [];

@@ -61,15 +61,9 @@ import 'helm_feature.dart';
 /// зависимости даже при ошибке — объект уже живёт, и дальнейшие изменения
 /// уже отслеженных зависимостей не должны потеряться. Общий хелпер скрыл бы
 /// эту разницу и был бы либо неверен для конструктора, либо для recompute.
-class HelmComputed<T> extends ChangeNotifier {
-  HelmComputed(this._compute, {bool Function(T a, T b)? equals, this.onError})
-    : _equals = equals ?? (defaultEquals<T>) {
-    _value = _evaluate();
-  }
-
-  final T Function() _compute;
-  final bool Function(T a, T b) _equals;
-  late T _value;
+class HelmComputed<T>(
+  final T Function() _compute, {
+  bool Function(T a, T b)? equals,
 
   /// Обработчик исключений из [_compute]. Без него исключение из [_compute]
   /// пробрасывается наружу как обычно (конструктор бросает; [_recompute]
@@ -77,7 +71,14 @@ class HelmComputed<T> extends ChangeNotifier {
   /// вызывает и оставляет [value] равным последнему успешному значению
   /// вместо падения; зависимости, отслеженные до точки исключения, всё
   /// равно синхронизируются — реакция на дальнейшие изменения не теряется.
-  final void Function(Object error, StackTrace stackTrace)? onError;
+  final void Function(Object error, StackTrace stackTrace)? onError,
+}) extends ChangeNotifier {
+  this : _equals = equals ?? (defaultEquals<T>) {
+    _value = _evaluate();
+  }
+
+  final bool Function(T a, T b) _equals;
+  late T _value;
 
   /// Активные зависимости: непараметризованный токен фичи → её [Listenable]
   /// (в реальности `HelmController<S, E>`, суженный через

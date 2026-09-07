@@ -3,11 +3,7 @@ import 'package:helm/flutter.dart';
 
 import '../../domain/market/curated_symbols.dart';
 
-final class WatchlistState {
-  const WatchlistState({this.symbols = const {}});
-
-  final Set<String> symbols;
-
+final class const WatchlistState({final Set<String> symbols = const {}}) {
   bool contains(String symbol) => symbols.contains(symbol);
 
   WatchlistState _toggled(String symbol) {
@@ -17,10 +13,8 @@ final class WatchlistState {
   }
 }
 
-final class ToggleWatchCommand implements SyncCommand<WatchlistState> {
-  const ToggleWatchCommand(this.symbol);
-  final String symbol;
-
+final class const ToggleWatchCommand(final String symbol)
+    implements SyncCommand<WatchlistState> {
   @override
   WatchlistState execute(WatchlistState current) => current._toggled(symbol);
 }
