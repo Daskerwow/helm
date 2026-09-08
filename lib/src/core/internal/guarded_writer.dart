@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import '../state_access.dart';
-import '../cancel_token.dart';
+import 'state_access.dart';
+import 'cancel_token.dart';
 
 /// Decorator над [StateWriter], блокирующий коммиты после отмены токена —
 /// второй рубеж защиты поверх контракта "команда сама проверяет

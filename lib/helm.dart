@@ -9,7 +9,7 @@
 /// ### Три принципа
 /// - **Явность** — каждый исход диспатча типизирован через [DispatchResult].
 /// - **Разделение прав** — команды получают ровно то, что им нужно:
-///   [IStateReader] или [IStateWriter], редко оба сразу.
+///   [StateReader] или [StateWriter], редко оба сразу.
 /// - **Отменяемость** — асинхронные команды прерываются через [CancelToken],
 ///   исключая race condition при повторных запросах.
 ///
@@ -46,16 +46,4 @@
 /// содержательного сравнения — см. их докстринги.
 library;
 
-export 'src/core/cancel_token.dart';
-export 'src/core/dispatch.dart';
-export 'src/core/equality.dart';
-export 'src/core/loadable.dart';
-export 'src/core/loadable_command.dart';
-export 'src/core/middleware.dart';
-export 'src/core/state_access.dart';
-export 'src/core/command.dart';
-export 'src/core/side_effect_command.dart';
-export 'src/core/state_storage.dart';
-export 'src/core/state_store.dart';
-export 'src/core/store_builder.dart';
-export 'src/core/store_config.dart';
+export 'src/core/core.dart';

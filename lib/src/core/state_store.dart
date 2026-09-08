@@ -7,8 +7,8 @@ import 'internal/guarded_writer.dart';
 import 'internal/tracking_writer.dart';
 import 'internal/emitting_writer.dart';
 import 'state_storage.dart';
-import 'state_access.dart';
-import 'cancel_token.dart';
+import 'internal/state_access.dart';
+import 'internal/cancel_token.dart';
 import 'dispatch.dart';
 import 'equality.dart';
 import 'middleware.dart';
@@ -181,7 +181,7 @@ final class _ListenerHub<S, E> {
 /// ### Согласованность
 ///
 /// [state] (синхронное чтение) и [states]/[addOnChanged] всегда
-/// согласованы: любой успешный `IStateWriter.commit` публикуется сразу в
+/// согласованы: любой успешный `StateWriter.commit` публикуется сразу в
 /// момент вызова, независимо от итогового исхода dispatch'а и от того,
 /// сколько раз команда коммитит за одно выполнение.
 ///
@@ -216,7 +216,9 @@ final class StateStore<S, E> {
     bool Function(S a, S b)? equals,
     this.logStreamEvents = true,
     this._onDroppedCommit,
-  }) : _accessor = StateAccessor(storage ?? StateMemoryStorage(initialState)),
+  }) : _accessor = StateAccessorImpl(
+         storage ?? StateMemoryStorage(initialState),
+       ),
        _equals = equals ?? defaultEquals<S>;
 
   /// Создаёт Store из готового хранилища — начальное состояние берётся из
@@ -226,10 +228,10 @@ final class StateStore<S, E> {
     this.logStreamEvents = true,
     bool Function(S a, S b)? equals,
     this._onDroppedCommit,
-  }) : _accessor = StateAccessor(storage),
+  }) : _accessor = StateAccessorImpl(storage),
        _equals = equals ?? defaultEquals<S>;
 
-  final StateAccessor<S> _accessor;
+  final StateAccessorImpl<S> _accessor;
 
   /// Компаратор "состояние не изменилось" — по умолчанию структурное `==`.
   /// Передай свой в конструктор, если `S` — мутируемая коллекция или тип с
@@ -686,7 +688,7 @@ final class StateStore<S, E> {
   /// [EmittingWriter] на каждый отдельный коммит по тому же компаратору.
   ///
   /// `writer.hasChanged` сам по себе фиксирует лишь факт вызова
-  /// `IStateWriter.commit` хоть раз за итерацию — не то же самое, что
+  /// `StateWriter.commit` хоть раз за итерацию — не то же самое, что
   /// "состояние реально другое": [EmittingWriter] может не опубликовать
   /// коммит, если `_equals(next, last)`, а [TrackingWriter] всё равно
   /// отметит `hasChanged = true`. Без явной проверки `!_equals(...)` здесь

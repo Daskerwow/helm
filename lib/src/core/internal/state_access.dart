@@ -1,4 +1,4 @@
-import 'state_storage.dart';
+import '../state_storage.dart';
 
 /// Право только на чтение состояния — передаётся запросам и наблюдателям.
 abstract interface class StateReader<S> {
@@ -17,12 +17,12 @@ abstract interface class StateWriter<S> {
 }
 
 /// Полный доступ: чтение и запись.
-abstract interface class IStateAccessor<S>
+abstract interface class StateAccessor<S>
     implements StateReader<S>, StateWriter<S> {}
 
-/// Адаптер [IStateAccessor] → [StateStorage] — без бизнес-логики.
-final class const StateAccessor<S>(final StateStorage<S> _storage)
-    implements IStateAccessor<S> {
+/// Адаптер [StateAccessor] → [StateStorage] — без бизнес-логики.
+final class const StateAccessorImpl<S>(final StateStorage<S> _storage)
+    implements StateAccessor<S> {
   @override
   S get current => _storage.read();
 

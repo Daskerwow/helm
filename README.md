@@ -25,7 +25,7 @@ lib/
 - **Явность** — каждый исход диспатча типизирован через `DispatchResult`
   (`DispatchSuccess` / `DispatchFailure` / `DispatchCancelled`).
 - **Разделение прав** — команды получают ровно то, что им нужно:
-  `IStateReader` или `IStateWriter`, редко оба сразу.
+  `IStateReader` или `StateWriter`, редко оба сразу.
 - **Отменяемость** — асинхронные команды прерываются через `CancelToken`,
   исключая race condition при повторных запросах.
 
@@ -75,14 +75,14 @@ class CounterScreen extends HelmWidget {
 `.effect()`) — это один и тот же механизм подписки в двух синтаксисах, а не
 два независимых решения одной задачи:
 
-| Задача                                   | API                              |
-|-------------------------------------------|-----------------------------------|
-| Ребилд по всему состоянию                  | `HelmBuilder` / `feature.watch()` |
-| Ребилд по срезу состояния                  | `HelmSelector` / `feature.select()` |
-| Реакция на side-эффект, без ребилда        | `HelmListener` / `feature.effect()`* |
-| Состояние сразу из нескольких фич          | `HelmComputed` / `helmCompute()`  |
-| `S == Loadable<T>` целиком                 | `HelmLoadableBuilder`             |
-| Вне `build()`                              | `feature.value` / `feature.listen()` |
+| Задача                              | API                                   |
+| ----------------------------------- | ------------------------------------- |
+| Ребилд по всему состоянию           | `HelmBuilder` / `feature.watch()`     |
+| Ребилд по срезу состояния           | `HelmSelector` / `feature.select()`   |
+| Реакция на side-эффект, без ребилда | `HelmListener` / `feature.effect()`\* |
+| Состояние сразу из нескольких фич   | `HelmComputed` / `helmCompute()`      |
+| `S == Loadable<T>` целиком          | `HelmLoadableBuilder`                 |
+| Вне `build()`                       | `feature.value` / `feature.listen()`  |
 
 \* `feature.effect()` реагирует на изменение **состояния**, а не на
 side-эффект `E` — для side-эффектов вне widget-дерева используй
@@ -129,7 +129,7 @@ StoreBuilder<AppState, AppEffect>(AppState.initial())
 
 Middleware работает поверх уже случившихся диспатчей (наблюдатель, а не
 перехватчик) — это сознательное ограничение: `StateStore` не даёт ничему
-подменить команду или её результат *до* выполнения, иначе терялась бы
+подменить команду или её результат _до_ выполнения, иначе терялась бы
 гарантия синхронной публикации любого `commit` (см. докстринг `StateStore`,
 раздел "Согласованность").
 

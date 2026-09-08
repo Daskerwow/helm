@@ -1,4 +1,4 @@
-import '../state_access.dart';
+import 'state_access.dart';
 
 /// Decorator над [StateWriter], фиксирующий факт и "before"-состояние
 /// [commit] — нужен там, где нельзя заранее знать состояние "до": в

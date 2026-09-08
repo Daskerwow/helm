@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import 'internal/callback_list.dart';
+import 'callback_list.dart';
 
 /// Причина отмены — см. [CancelToken.reason] и `DispatchCancelled`.
 enum CancelReason {
@@ -17,7 +17,7 @@ enum CancelReason {
 
 /// Одноразовый токен отмены асинхронной/потоковой команды.
 ///
-/// Проверяй [isCancelled] после каждого `await`, перед `IStateWriter.commit` —
+/// Проверяй [isCancelled] после каждого `await`, перед `StateWriter.commit` —
 /// это исключает запись устаревшего результата при race condition. Store
 /// дополнительно подстраховывает через `GuardedWriter`: коммит после отмены
 /// молча игнорируется, даже если команда не проверила токен сама.

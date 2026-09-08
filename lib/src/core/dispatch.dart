@@ -1,4 +1,4 @@
-import 'cancel_token.dart';
+import 'internal/cancel_token.dart';
 
 /// Тип диспатча — для фильтрации/группировки в middleware и логах.
 enum DispatchKind { sync, async, stream }
@@ -117,7 +117,7 @@ final class const DispatchSuccess<S>(
 
 /// Команда завершилась необработанным исключением.
 ///
-/// Состояние могло измениться: любой `IStateWriter.commit`, сделанный до
+/// Состояние могло измениться: любой `StateWriter.commit`, сделанный до
 /// исключения, уже применён и опубликован.
 final class const DispatchFailure<S>(
   final Object error,

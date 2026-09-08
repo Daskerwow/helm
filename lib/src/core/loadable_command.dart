@@ -1,6 +1,6 @@
-import 'cancel_token.dart';
+import 'internal/cancel_token.dart';
 import 'loadable.dart';
-import 'state_access.dart';
+import 'internal/state_access.dart';
 import 'side_effect_command.dart';
 import 'command.dart';
 

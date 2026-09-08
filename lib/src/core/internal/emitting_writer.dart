@@ -1,4 +1,4 @@
-import '../state_access.dart';
+import 'state_access.dart';
 
 /// Decorator над [StateWriter], немедленно публикующий каждое реальное
 /// изменение состояния — синхронно, в момент вызова [commit], а не отложенно.
@@ -17,7 +17,7 @@ import '../state_access.dart';
 /// чтением (например, Hive с шифрованием) это вдвое меньше IO на каждый
 /// коммит: было "прочитать + записать", стало только "записать".
 final class EmittingWriter<S>(
-  final IStateAccessor<S> _accessor,
+  final StateAccessor<S> _accessor,
 
   /// Вызывается синхронно сразу после записи, только если значение реально
   /// отличается от предыдущего (см. [_equals]).

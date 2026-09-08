@@ -1,5 +1,5 @@
-import 'cancel_token.dart';
-import 'state_access.dart';
+import 'internal/cancel_token.dart';
+import 'internal/state_access.dart';
 import 'side_effect_command.dart';
 
 /// Мгновенная синхронная мутация состояния — без IO и side-эффектов.
@@ -20,7 +20,7 @@ abstract interface class SyncCommand<S> {
 
 /// Единичное асинхронное действие без side-эффекта.
 ///
-/// Проверяй `CancelToken.isCancelled` перед каждым `IStateWriter.commit` —
+/// Проверяй `CancelToken.isCancelled` перед каждым `StateWriter.commit` —
 /// см. докстринг `CancelToken`.
 ///
 /// ```dart

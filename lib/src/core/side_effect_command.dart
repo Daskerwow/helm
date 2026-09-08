@@ -1,5 +1,5 @@
-import 'cancel_token.dart';
-import 'state_access.dart';
+import 'internal/cancel_token.dart';
+import 'internal/state_access.dart';
 
 /// (новое состояние, опциональный эффект) — атомарный результат sync-команды
 /// с эффектом. `effect == null` — эффект не эмитируется.
@@ -10,7 +10,7 @@ typedef SyncSideEffectResult<S, E> = (S next, E? effect);
 /// Должна быть чистой функцией.
 ///
 /// ```dart
-/// final class IncrementCommand implements ISyncSideEffect<CounterState, CounterEffect> {
+/// final class IncrementCommand implements SyncSideEffect<CounterState, CounterEffect> {
 ///   const IncrementCommand({required this.limit});
 ///   final int limit;
 ///
@@ -27,10 +27,10 @@ abstract interface class SyncSideEffect<S, E> {
 
 /// Единичное асинхронное действие с возвратом side-эффекта.
 ///
-/// Проверяй `CancelToken.isCancelled` перед каждым `IStateWriter.commit`.
+/// Проверяй `CancelToken.isCancelled` перед каждым `StateWriter.commit`.
 ///
 /// ```dart
-/// final class LoginCommand implements IAsyncSideEffect<UserState, UserEffect> {
+/// final class LoginCommand implements AsyncSideEffect<UserState, UserEffect> {
 ///   const LoginCommand(this._api, this.credentials);
 ///   final AuthApi _api;
 ///   final Credentials credentials;
@@ -61,7 +61,7 @@ abstract interface class AsyncSideEffect<S, E> {
 /// эмитировать side-эффект. `null` из итерации — эффекта нет.
 ///
 /// ```dart
-/// final class ChatStreamCommand implements IStreamSideEffect<ChatState, ChatEffect> {
+/// final class ChatStreamCommand implements StreamSideEffect<ChatState, ChatEffect> {
 ///   const ChatStreamCommand(this._socket);
 ///   final ChatSocket _socket;
 ///

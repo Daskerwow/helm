@@ -72,6 +72,8 @@ class HelmComputed<T>(
   /// вместо падения; зависимости, отслеженные до точки исключения, всё
   /// равно синхронизируются — реакция на дальнейшие изменения не теряется.
   final void Function(Object error, StackTrace stackTrace)? onError,
+
+  /// Наследуемся от ChangeNotifier()
 }) extends ChangeNotifier {
   this : _equals = equals ?? (defaultEquals<T>) {
     _value = _evaluate();
