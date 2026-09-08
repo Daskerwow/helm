@@ -18,10 +18,6 @@ dependencies:
   flutter_test:
     sdk: flutter
   collection: ^1.19.1
-  dio: ^5.11.0
-  fl_chart: ^1.2.0
-  go_router: ^17.5.0
-  web_socket_channel: ^3.0.3
   material_ui: ^1.1.1
 
 dev_dependencies:

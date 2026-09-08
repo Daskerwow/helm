@@ -105,30 +105,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
-  dio:
-    dependency: "direct main"
-    description:
-      name: dio
-      sha256: "0df44ebba85e503958eb75d07eedd3c86275a58c1d3eda2f2ce8f0a2c3abbb3c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.11.0"
-  dio_web_adapter:
-    dependency: transitive
-    description:
-      name: dio_web_adapter
-      sha256: dd58dc3861eb36edb13b217efc006a1c21e5bbc341de8c229b85634fa5e362e4
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.0"
-  equatable:
-    dependency: transitive
-    description:
-      name: equatable
-      sha256: "3bce007a596ff8b3119c45d68aaef631272537c03d30e5d4534dd24bf4c5eaa2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   fake_async:
     dependency: transitive
     description:
@@ -145,14 +121,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
-  fl_chart:
-    dependency: "direct main"
-    description:
-      name: fl_chart
-      sha256: b938f77d042cbcd822936a7a359a7235bad8bd72070de1f827efc2cc297ac888
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -165,11 +133,6 @@ packages:
     version: "0.0.0"
   flutter_test:
     dependency: "direct main"
-    description: flutter
-    source: sdk
-    version: "0.0.0"
-  flutter_web_plugins:
-    dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"
@@ -189,14 +152,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.3"
-  go_router:
-    dependency: "direct main"
-    description:
-      name: go_router
-      sha256: d7a3576cb312649eaa51f2356450aed686085fb58fcdebda5b359aa951eef7ea
-      url: "https://pub.dev"
-    source: hosted
-    version: "17.5.0"
   http_multi_server:
     dependency: transitive
     description:
@@ -515,7 +470,7 @@ packages:
     source: hosted
     version: "1.0.1"
   web_socket_channel:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: web_socket_channel
       sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8
