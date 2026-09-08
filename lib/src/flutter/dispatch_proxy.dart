@@ -22,11 +22,12 @@ mixin DispatchProxy<S, E> {
   @protected
   StateStore<S, E> get dispatchTarget;
 
-  Future<DispatchResult<S>> dispatch(AsyncCommand<S> command) =>
-      dispatchTarget.dispatch(command);
+  Future<DispatchResult<S>> dispatchAsync(AsyncCommand<S> command) =>
+      dispatchTarget.dispatchAsync(command);
 
-  Future<DispatchResult<S>> dispatchWithEffect(AsyncSideEffect<S, E> command) =>
-      dispatchTarget.dispatchWithEffect(command);
+  Future<DispatchResult<S>> dispatchAsyncWithEffect(
+    AsyncSideEffect<S, E> command,
+  ) => dispatchTarget.dispatchAsyncWithEffect(command);
 
   DispatchResult<S> dispatchSync(SyncCommand<S> command) =>
       dispatchTarget.dispatchSync(command);

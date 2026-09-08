@@ -82,7 +82,7 @@ void main() {
       Object? capturedError;
       store.addErrorListener((e, st) => capturedError = e);
 
-      final result = await store.dispatch(const _Fail());
+      final result = await store.dispatchAsync(const _Fail());
 
       expect(result, isA<DispatchFailure<_CounterState>>());
       expect(capturedError, isA<StateError>());
@@ -94,10 +94,10 @@ void main() {
         initialState: const Loadable.idle(),
       );
 
-      final first = store.dispatch(
+      final first = store.dispatchAsync(
         _Load(1, delay: const Duration(milliseconds: 50)),
       );
-      final second = store.dispatch(_Load(2, delay: Duration.zero));
+      final second = store.dispatchAsync(_Load(2, delay: Duration.zero));
 
       final firstResult = await first;
       final secondResult = await second;
@@ -122,8 +122,8 @@ void main() {
           initialState: const Loadable.idle(),
         );
 
-        final r1 = await intStore.dispatch(_Load<int>(42));
-        final r2 = await stringStore.dispatch(_Load<String>('42'));
+        final r1 = await intStore.dispatchAsync(_Load<int>(42));
+        final r2 = await stringStore.dispatchAsync(_Load<String>('42'));
 
         expect(r1, isA<DispatchSuccess<Loadable<int>>>());
         expect(r2, isA<DispatchSuccess<Loadable<String>>>());
@@ -138,10 +138,10 @@ void main() {
     test('DispatchKeyed: параллельные запросы с разным ключом не вытесняют друг друга', () async {
       final store = StateStore<String, Never>(initialState: '');
 
-      final a = store.dispatch(
+      final a = store.dispatchAsync(
         _FetchUser('alice', const Duration(milliseconds: 30)),
       );
-      final b = store.dispatch(
+      final b = store.dispatchAsync(
         _FetchUser('bob', const Duration(milliseconds: 10)),
       );
 
@@ -164,7 +164,7 @@ void main() {
         store.close();
 
         final syncResult = store.dispatchSync(const _Increment());
-        final asyncResult = await store.dispatch(const _Fail());
+        final asyncResult = await store.dispatchAsync(const _Fail());
 
         expect(
           (syncResult as DispatchCancelled).reason,

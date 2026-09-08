@@ -142,7 +142,7 @@ final class _ListenerHub<S, E> {
 /// |        | без эффекта             | с эффектом                  |
 /// |--------|--------------------------|-------------------------------|
 /// | Stream | [dispatchStream]         | [dispatchStreamWithEffect]   |
-/// | Async  | [dispatch]               | [dispatchWithEffect]         |
+/// | Async  | [dispatchAsync]               | [dispatchAsyncWithEffect]         |
 /// | Sync   | [dispatchSync]           | [dispatchSyncWithEffect]     |
 ///
 /// Каждая пара реализована через общий приватный метод ([_dispatchAsync],
@@ -412,20 +412,21 @@ final class StateStore<S, E> {
   /// уже выполняется — предыдущая отменяется с [CancelReason.superseded].
   /// После [close] немедленно возвращает
   /// `DispatchCancelled(CancelReason.storeClosed)`, не запуская команду.
-  Future<DispatchResult<S>> dispatch(AsyncCommand<S> command) =>
+  Future<DispatchResult<S>> dispatchAsync(AsyncCommand<S> command) =>
       _dispatchAsync(command, (writer, token) async {
         await command.execute(_accessor, writer, token);
         return null;
       });
 
-  /// Как [dispatch], но с side-эффектом.
-  Future<DispatchResult<S>> dispatchWithEffect(AsyncSideEffect<S, E> command) =>
-      _dispatchAsync(
-        command,
-        (writer, token) => command.execute(_accessor, writer, token),
-      );
+  /// Как [dispatchAsync], но с side-эффектом.
+  Future<DispatchResult<S>> dispatchAsyncWithEffect(
+    AsyncSideEffect<S, E> command,
+  ) => _dispatchAsync(
+    command,
+    (writer, token) => command.execute(_accessor, writer, token),
+  );
 
-  /// Общее ядро [dispatch]/[dispatchWithEffect]: строит защищённый от
+  /// Общее ядро [dispatchAsync]/[dispatchAsyncWithEffect]: строит защищённый от
   /// коммитов-после-отмены writer ([GuardedWriter] поверх [EmittingWriter])
   /// и прогоняет его через [_runAsync]. Разница между двумя публичными
   /// методами — только в том, возвращает ли `execute()` команды ещё и
@@ -750,7 +751,7 @@ final class StateStore<S, E> {
   /// с соответствующим [CancelReason] — тот же контракт, что и у отмены
   /// async-команд в [_runAsync]. Без этого [addDispatchListener] вообще не
   /// видел бы отмену/вытеснение stream-команд — асимметрия с async-путём,
-  /// где `DispatchCancelled` виден и через возврат [dispatch], и через
+  /// где `DispatchCancelled` виден и через возврат [dispatchAsync], и через
   /// [addDispatchListener].
   ///
   /// No-op, если по [key] нет активной подписки (например, повторный

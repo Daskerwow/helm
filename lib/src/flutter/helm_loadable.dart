@@ -76,7 +76,7 @@ class HelmLoadableBuilder<T, E> extends StatelessWidget {
 extension HelmFeatureLoadable<T, E> on HelmFeature<Loadable<T>, E> {
   /// Запускает `LoadCommand` — one-shot загрузка `loading → data / error`.
   Future<DispatchResult<Loadable<T>>> load(Future<T> Function() load) =>
-      dispatch(LoadCommand<T>(load));
+      dispatchAsync(LoadCommand<T>(load));
 
   /// Подписывается на внешний `Stream<T>` через `WatchCommand` — каждое
   /// значение сразу становится `Loadable.data`.
