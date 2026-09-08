@@ -2,18 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import 'internal/callback_list.dart';
-import 'internal/guarded_writer.dart';
-import 'internal/tracking_writer.dart';
-import 'internal/emitting_writer.dart';
+import '../internal/callback_list.dart';
+import '../internal/guarded_writer.dart';
+import '../internal/tracking_writer.dart';
+import '../internal/emitting_writer.dart';
 import 'state_storage.dart';
-import 'internal/state_access.dart';
-import 'internal/cancel_token.dart';
-import 'dispatch.dart';
-import 'equality.dart';
-import 'middleware.dart';
-import 'command.dart';
-import 'side_effect_command.dart';
+import '../internal/state_access.dart';
+import '../internal/cancel_token.dart';
+import '../dispatch.dart';
+import '../equality.dart';
+import '../middleware.dart';
+import '../commands/command.dart';
+import '../commands/side_effect_command.dart';
 
 typedef _AsyncBody<E> = Future<E?> Function(CancelToken token);
 typedef _SyncBody<E> = E? Function();
@@ -139,10 +139,10 @@ final class _ListenerHub<S, E> {
 ///
 /// ### Матрица dispatch-методов
 ///
-/// |        | без эффекта             | с эффектом                  |
-/// |--------|--------------------------|-------------------------------|
+/// |        | без эффекта              | с эффектом                   |
+/// |--------|--------------------------|------------------------------|
 /// | Stream | [dispatchStream]         | [dispatchStreamWithEffect]   |
-/// | Async  | [dispatchAsync]               | [dispatchAsyncWithEffect]         |
+/// | Async  | [dispatchAsync]          | [dispatchAsyncWithEffect]    |
 /// | Sync   | [dispatchSync]           | [dispatchSyncWithEffect]     |
 ///
 /// Каждая пара реализована через общий приватный метод ([_dispatchAsync],

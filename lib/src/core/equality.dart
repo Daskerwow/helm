@@ -61,19 +61,13 @@ bool listEquals<T>(
   List<T>? b, {
   bool Function(T a, T b)? elementEquals,
 }) {
-  if (identical(a, b)) return true;
-  if (a == null || b == null) return false;
   final eq = elementEquals ?? defaultEquals;
   return ListEquality<T>(_FunctionEquality(eq)).equals(a, b);
 }
 
 /// Сравнение двух `Set<T>` по содержимому, без учёта порядка вставки —
 /// тонкая обёртка над `SetEquality` из `package:collection`.
-bool setEquals<T>(Set<T>? a, Set<T>? b) {
-  if (identical(a, b)) return true;
-  if (a == null || b == null) return false;
-  return const SetEquality().equals(a, b);
-}
+bool setEquals<T>(Set<T>? a, Set<T>? b) => const SetEquality().equals(a, b);
 
 /// Сравнение двух `Map<K, V>` по содержимому — ключи и значения, без учёта
 /// порядка вставки. Тонкая обёртка над `MapEquality` из `package:collection`.
@@ -86,8 +80,6 @@ bool mapEquals<K, V>(
   Map<K, V>? b, {
   bool Function(V a, V b)? valueEquals,
 }) {
-  if (identical(a, b)) return true;
-  if (a == null || b == null) return false;
   final eq = valueEquals ?? defaultEquals;
   return MapEquality<K, V>(values: _FunctionEquality(eq)).equals(a, b);
 }
@@ -106,7 +98,5 @@ bool mapEquals<K, V>(
 /// он почти всегда быстрее и точнее, чем этот обобщённый обход. [deepEquals]
 /// пригождается там, где содержательного `==` нет и заводить его ради
 /// одного сравнения в `StateStore(equals: ...)` избыточно.
-bool deepEquals(Object? a, Object? b) {
-  if (identical(a, b)) return true;
-  return const DeepCollectionEquality().equals(a, b);
-}
+bool deepEquals(Object? a, Object? b) =>
+    const DeepCollectionEquality().equals(a, b);

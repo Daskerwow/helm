@@ -1,5 +1,5 @@
-import 'internal/cancel_token.dart';
-import 'internal/state_access.dart';
+import '../internal/cancel_token.dart';
+import '../internal/state_access.dart';
 
 /// (новое состояние, опциональный эффект) — атомарный результат sync-команды
 /// с эффектом. `effect == null` — эффект не эмитируется.
@@ -21,7 +21,7 @@ typedef SyncSideEffectResult<S, E> = (S next, E? effect);
 ///   }
 /// }
 /// ```
-abstract interface class SyncSideEffect<S, E> {
+abstract interface class const SyncSideEffect<S, E>() {
   SyncSideEffectResult<S, E> execute(S current);
 }
 
@@ -49,7 +49,7 @@ abstract interface class SyncSideEffect<S, E> {
 ///   }
 /// }
 /// ```
-abstract interface class AsyncSideEffect<S, E> {
+abstract interface class const AsyncSideEffect<S, E>() {
   Future<E?> execute(
     StateReader<S> reader,
     StateWriter<S> writer,
@@ -72,6 +72,6 @@ abstract interface class AsyncSideEffect<S, E> {
 ///       });
 /// }
 /// ```
-abstract interface class StreamSideEffect<S, E> {
+abstract interface class const StreamSideEffect<S, E>() {
   Stream<E?> execute(StateReader<S> reader, StateWriter<S> writer);
 }

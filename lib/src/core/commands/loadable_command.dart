@@ -1,14 +1,13 @@
-import 'internal/cancel_token.dart';
-import 'loadable.dart';
-import 'internal/state_access.dart';
+import '../internal/cancel_token.dart';
+import '../loadable.dart';
+import '../internal/state_access.dart';
 import 'side_effect_command.dart';
 import 'command.dart';
 
 /// Общее ядро "loading → data / error" для [LoadCommand] и
 /// [LoadWithEffectCommand] — обе команды делают ровно один и тот же цикл
 /// запросов к [load], отличаясь только тем, что происходит с результатом
-/// (проброс исключения дальше vs. превращение в side-эффект). Раньше это
-/// был один и тот же try/catch, дословно продублированный в двух классах.
+/// (проброс исключения дальше vs. превращение в side-эффект).
 ///
 /// [onData]/[onError] вызываются уже ПОСЛЕ соответствующего коммита — им
 /// остаётся только решить, что делать с результатом на уровне конкретной
@@ -63,8 +62,7 @@ final class const LoadCommand<T>(final Future<T> Function() load)
     cancel: cancel,
     load: load,
     onData: (_) {},
-    // Сохраняем оригинальный stack trace, хотя rethrow здесь синтаксически
-    // невозможен (мы уже не в блоке catch самой команды, а в колбэке).
+    // Сохраняем оригинальный stack trace
     onError: (e, st) => Error.throwWithStackTrace(e, st),
   );
 }

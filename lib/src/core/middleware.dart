@@ -36,7 +36,7 @@ import 'dispatch.dart';
 ///
 /// См. `StateStore.addMiddleware` — тонкая обёртка поверх
 /// `StateStore.addDispatchListener`, дающая этому контракту точку входа.
-abstract interface class StoreMiddleware<S> {
+abstract interface class const StoreMiddleware<S>() {
   /// Вызывается после каждого диспатча — при успехе, ошибке и отмене, для
   /// sync/async/stream-команд одинаково. Не должен бросать исключения:
   /// `StateStore` изолирует ошибки между независимыми

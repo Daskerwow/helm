@@ -1,7 +1,7 @@
 import 'state_store.dart';
 import 'state_storage.dart';
-import 'dispatch.dart';
-import 'middleware.dart';
+import '../dispatch.dart';
+import '../middleware.dart';
 import 'store_config.dart';
 
 /// Fluent-строитель [StateStore] (Builder pattern).

@@ -51,7 +51,7 @@ abstract interface class DispatchLabeled {
 /// ```dart
 /// store.addDispatchListener((event) {
 ///   if (event.isSuccess) analytics.track(event.commandLabel);
-///   if (event.error != null) Sentry.captureException(event.error!);
+///   if (event.isError) Sentry.captureException(event.error!);
 /// });
 /// ```
 final class const DispatchEvent<S>({
@@ -80,17 +80,14 @@ final class const DispatchEvent<S>({
 }) {
   bool get isSuccess => error == null && cancelReason == null;
   bool get isCancelled => cancelReason != null;
+  bool get isError => error != null;
 
-  /// `✓ [async] FetchUserCommand (120ms)` — компактная строка для логов.
-  /// [useEmoji]`: false` — ASCII-маркеры для терминалов/парсеров без юникода.
-  String toLogString({bool useEmoji = true}) {
+  /// `[OK] [async] FetchUserCommand (120ms)` — компактная строка для логов.
+  String toLogString() {
     if (isCancelled) {
-      final mark = useEmoji ? '⊘' : '(cancelled)';
-      return '$mark [${kind.name}] $commandLabel (${cancelReason!.name})';
+      return '(cancelled) [${kind.name}] $commandLabel (${cancelReason!.name})';
     }
-    final status = useEmoji
-        ? (isSuccess ? '✓' : '✗')
-        : (isSuccess ? '[OK]' : '[FAIL]');
+    final status = (isSuccess ? '[OK]' : '[FAIL]');
     final time = elapsed != null ? ' (${elapsed!.inMilliseconds}ms)' : '';
     return '$status [${kind.name}] $commandLabel$time';
   }
@@ -128,5 +125,14 @@ final class const DispatchFailure<S>(
 ///
 /// Состояние могло измениться: коммиты до отмены уже применены — Store лишь
 /// гарантирует, что коммиты *после* отмены игнорируются.
-final class const DispatchCancelled<S>(final CancelReason reason)
-    extends DispatchResult<S>;
+final class const DispatchCancelled<S>(
+  /// Команда того же `DispatchKeyed.dispatchKey` запущена повторно — предыдущий вызов вытеснен.
+  /// [CancelReason.superseded],
+
+  /// Явный `StateStore.cancel` / `StateStore.cancelAll`.
+  /// [CancelReason.userRequested],
+
+  /// Store закрыт через `StateStore.close`.
+  /// [CancelReason.storeClosed],
+  final CancelReason reason,
+) extends DispatchResult<S>;

@@ -1,5 +1,5 @@
-import 'internal/cancel_token.dart';
-import 'internal/state_access.dart';
+import '../internal/cancel_token.dart';
+import '../internal/state_access.dart';
 import 'side_effect_command.dart';
 
 /// Мгновенная синхронная мутация состояния — без IO и side-эффектов.
@@ -14,7 +14,7 @@ import 'side_effect_command.dart';
 ///   AppState execute(AppState current) => current.copyWith(isDark: !current.isDark);
 /// }
 /// ```
-abstract interface class SyncCommand<S> {
+abstract interface class const SyncCommand<S>() {
   S execute(S current);
 }
 
@@ -36,7 +36,7 @@ abstract interface class SyncCommand<S> {
 ///   }
 /// }
 /// ```
-abstract interface class AsyncCommand<S> {
+abstract interface class const AsyncCommand<S>() {
   Future<void> execute(
     StateReader<S> reader,
     StateWriter<S> writer,
@@ -63,7 +63,7 @@ abstract interface class AsyncCommand<S> {
 /// store.dispatchStream(LocationStreamCommand(_gps));
 /// store.cancelStream<LocationStreamCommand>();
 /// ```
-abstract interface class StreamCommand<S> {
+abstract interface class const StreamCommand<S>() {
   Stream<void> execute(StateReader<S> reader, StateWriter<S> writer);
 }
 

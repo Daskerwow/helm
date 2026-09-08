@@ -1,4 +1,4 @@
-import '../state_storage.dart';
+import '../store/state_storage.dart';
 
 /// Право только на чтение состояния — передаётся запросам и наблюдателям.
 abstract interface class StateReader<S> {
