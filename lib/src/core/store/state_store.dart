@@ -2,18 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../internal/callback_list.dart';
-import '../internal/guarded_writer.dart';
-import '../internal/tracking_writer.dart';
-import '../internal/emitting_writer.dart';
 import 'state_storage.dart';
-import '../internal/state_access.dart';
-import '../internal/cancel_token.dart';
+import '../internal/internal.dart';
 import '../dispatch.dart';
 import '../equality.dart';
 import '../middleware.dart';
-import '../commands/command.dart';
-import '../commands/side_effect_command.dart';
+import '../commands/commands.dart';
 
 typedef _AsyncBody<E> = Future<E?> Function(CancelToken token);
 typedef _SyncBody<E> = E? Function();
@@ -210,7 +204,7 @@ final class StateStore<S, E> {
   /// [_onDroppedCommit] — см. `GuardedWriter`, раздел "Диагностика
   /// отброшенного коммита": опциональный хук для коммитов, отброшенных
   /// из-за коммита после отмены async-команды, работающий и в release.
-  StateStore({
+  new({
     required S initialState,
     StateStorage<S>? storage,
     bool Function(S a, S b)? equals,
@@ -223,7 +217,7 @@ final class StateStore<S, E> {
 
   /// Создаёт Store из готового хранилища — начальное состояние берётся из
   /// `storage.read()`.
-  StateStore.fromStorage(
+  new fromStorage(
     StateStorage<S> storage, {
     this.logStreamEvents = true,
     bool Function(S a, S b)? equals,
