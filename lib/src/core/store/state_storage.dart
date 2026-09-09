@@ -10,7 +10,7 @@
 /// на диск делай как побочный эффект в `onChanged`/команде, а не в
 /// [write]. Это сознательное ограничение: Store — это runtime-состояние
 /// в памяти с быстрым синхронным доступом, а не ORM.
-abstract interface class const StateStorage<S>() {
+abstract interface class StateStorage<S> {
   S read();
   void write(S state);
 }

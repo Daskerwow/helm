@@ -7,7 +7,8 @@ import 'command.dart';
 /// Общее ядро "loading → data / error" для [LoadCommand] и
 /// [LoadWithEffectCommand] — обе команды делают ровно один и тот же цикл
 /// запросов к [load], отличаясь только тем, что происходит с результатом
-/// (проброс исключения дальше vs. превращение в side-эффект).
+/// (проброс исключения дальше vs. превращение в side-эффект). Раньше это
+/// был один и тот же try/catch, дословно продублированный в двух классах.
 ///
 /// [onData]/[onError] вызываются уже ПОСЛЕ соответствующего коммита — им
 /// остаётся только решить, что делать с результатом на уровне конкретной
@@ -32,7 +33,7 @@ Future<void> _runLoadable<T>({
   } catch (e, st) {
     if (cancel.isCancelled) return;
 
-    writer.commit(Loadable.error(e, st, previous));
+    writer.commit(Loadable.error(e, stackTrace: st, previous: previous));
     onError(e, st);
   }
 }
@@ -62,7 +63,8 @@ final class const LoadCommand<T>(final Future<T> Function() load)
     cancel: cancel,
     load: load,
     onData: (_) {},
-    // Сохраняем оригинальный stack trace
+    // Сохраняем оригинальный stack trace, хотя rethrow здесь синтаксически
+    // невозможен (мы уже не в блоке catch самой команды, а в колбэке).
     onError: (e, st) => Error.throwWithStackTrace(e, st),
   );
 }
@@ -131,15 +133,22 @@ final class const WatchCommand<T>(final Stream<T> Function() source)
     try {
       stream = source();
     } catch (e, st) {
-      writer.commit(Loadable.error(e, st, reader.current.valueOrNull));
+      writer.commit(
+        Loadable.error(e, stackTrace: st, previous: reader.current.valueOrNull),
+      );
       return Stream<void>.error(e, st);
     }
 
     return stream
         .map((value) => writer.commit(Loadable.data(value)))
         .handleError(
-          (Object e, StackTrace st) =>
-              writer.commit(Loadable.error(e, st, reader.current.valueOrNull)),
+          (Object e, StackTrace st) => writer.commit(
+            Loadable.error(
+              e,
+              stackTrace: st,
+              previous: reader.current.valueOrNull,
+            ),
+          ),
         );
   }
 }

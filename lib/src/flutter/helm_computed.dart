@@ -51,6 +51,21 @@ import 'helm_feature.dart';
 /// Если у зависимой фичи подменили/закрыли Store, [HelmComputed] сам
 /// переподключится к новому контроллеру через `HelmFeatureHandle.lifecycle`.
 ///
+/// ### Диагностика забытого `dispose()` — [debugActiveComputed]
+/// Симметрично `HelmFeature.debugActiveFeatures`: каждый живой (не
+/// задиспозенный) [HelmComputed] регистрируется здесь только в debug-режиме
+/// (мутации обёрнуты в `assert`, в release ничего не стоят). Забытый
+/// `dispose()` держит зависимые фичи `acquire()`-нутыми — этот реестр
+/// позволяет ловить такие утечки в тестах тем же приёмом, что и для
+/// `HelmFeature`:
+///
+/// ```dart
+/// tearDown(() {
+///   expect(HelmComputed.debugActiveComputed, isEmpty,
+///       reason: 'HelmComputed остался активным между тестами — забыт dispose()');
+/// });
+/// ```
+///
 /// ### Почему [_evaluate] и [_recompute] не объединены в один метод
 /// Оба делают "track + sync зависимостей", но с разной семантикой ошибок:
 /// [_evaluate] (вызывается только из конструктора) НЕ синхронизирует
@@ -77,6 +92,11 @@ class HelmComputed<T>(
 }) extends ChangeNotifier {
   this : _equals = equals ?? (defaultEquals<T>) {
     _value = _evaluate();
+
+    assert(() {
+      _debugActiveComputed.add(this);
+      return true;
+    }());
   }
 
   final bool Function(T a, T b) _equals;
@@ -93,6 +113,15 @@ class HelmComputed<T>(
   /// внутренний вызов просто не выполняет вложенный пересчёт (внешний
   /// вызов и так пересчитает актуальное значение по завершении).
   bool _recomputing = false;
+
+  /// См. докстринг класса, раздел "Диагностика забытого dispose()" — только
+  /// debug-режим, мутации обёрнуты в `assert`.
+  static final _debugActiveComputed = <HelmComputed>{};
+
+  /// См. докстринг поля [_debugActiveComputed]. Возвращает снимок —
+  /// изменения реестра после вызова на него не влияют.
+  static Set<HelmComputed> get debugActiveComputed =>
+      Set<HelmComputed>.unmodifiable(_debugActiveComputed);
 
   /// Текущее вычисленное значение — синхронное чтение без подписки.
   T get value => _value;
@@ -188,6 +217,12 @@ class HelmComputed<T>(
       entry.key.release();
     }
     _deps.clear();
+
+    assert(() {
+      _debugActiveComputed.remove(this);
+      return true;
+    }());
+
     super.dispose();
   }
 }

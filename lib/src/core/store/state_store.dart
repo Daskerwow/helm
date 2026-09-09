@@ -12,18 +12,6 @@ import '../commands/commands.dart';
 typedef _AsyncBody<E> = Future<E?> Function(CancelToken token);
 typedef _SyncBody<E> = E? Function();
 
-/// Активная stream-подписка вместе с лейблом команды, её породившей.
-///
-/// Лейбл нужен отдельно от самой подписки: в момент отмены (вытеснение
-/// новым [StateStore.dispatchStream]/[StateStore.dispatchStreamWithEffect]
-/// той же группы, явный [StateStore.cancelStream] или [StateStore.close])
-/// самой команды уже нет под рукой — её видел только `execute()` в момент
-/// подписки — а [DispatchEvent] требует `commandLabel`.
-final class const _ActiveStreamSubscription(
-  final StreamSubscription<void> subscription,
-  final String label,
-);
-
 /// Четыре независимых канала синхронной публикации [StateStore]: изменения
 /// состояния, side-эффекты, исходы диспатча, необработанные исключения.
 ///
@@ -143,6 +131,13 @@ final class _ListenerHub<S, E> {
 /// [_dispatchStream], [_dispatchSyncInternal]) — единственное отличие
 /// внутри пары в том, возвращает ли `execute()` команды ещё и side-эффект.
 ///
+/// ### Учёт активных токенов/подписок — `DispatchRegistry`
+///
+/// Store не хранит `Map`-ы токенов отмены и stream-подписок сам — этим
+/// занимается `internal/dispatch_registry.dart`. Store остаётся
+/// оркестратором самого диспатча; какой ключ сейчас "в полёте" и как его
+/// отменить — забота реестра, тестируемая отдельно от Store.
+///
 /// ### Реактивность — прямые синхронные слушатели, без `Stream`-накладных
 ///
 /// [addOnChanged]/[addOnEffect]/[addDispatchListener]/[addErrorListener] —
@@ -238,6 +233,10 @@ final class StateStore<S, E> {
 
   final _listeners = _ListenerHub<S, E>();
 
+  /// Реестр активных async-токенов и stream-подписок — см.
+  /// `internal/dispatch_registry.dart`.
+  final _dispatch = DispatchRegistry();
+
   /// Кэш [states] — создаётся лениво один раз, `Stream.multi` сам заново
   /// прогоняет свой колбэк на каждого нового подписчика (см. геттер).
   Stream<S>? _states;
@@ -248,9 +247,6 @@ final class StateStore<S, E> {
   final _stateStreamControllers = <MultiStreamController<S>>{};
 
   StreamController<E>? _effectsController;
-
-  final _streamSubs = <Object, _ActiveStreamSubscription>{};
-  final _cancelTokens = <Object, CancelToken>{};
 
   bool _closed = false;
 
@@ -482,14 +478,10 @@ final class StateStore<S, E> {
 
   /// Отменяет активную async-команду по явному ключу — см. `DispatchKeyed`.
   void cancelKey(Object key) =>
-      _cancelTokens[key]?.cancel(CancelReason.userRequested);
+      _dispatch.cancelToken(key, CancelReason.userRequested);
 
   /// Отменяет все активные async-команды. Уже завершённые не затрагиваются.
-  void cancelAll() {
-    for (final token in _cancelTokens.values) {
-      token.cancel(CancelReason.userRequested);
-    }
-  }
+  void cancelAll() => _dispatch.cancelAllTokens(CancelReason.userRequested);
 
   /// Отменяет активную stream-подписку по типу `U` — см. [cancel]. Как и
   /// отмена async-команды, эмитирует [DispatchEvent] с
@@ -512,15 +504,13 @@ final class StateStore<S, E> {
     if (_closed) return;
     _closed = true;
 
-    for (final token in _cancelTokens.values) {
-      token.cancel(CancelReason.storeClosed);
-    }
+    _dispatch.cancelAllTokens(CancelReason.storeClosed);
 
-    for (final key in _streamSubs.keys.toList(growable: false)) {
+    for (final key in _dispatch.activeStreamKeys) {
       _cancelStreamSubscription(key, CancelReason.storeClosed);
     }
 
-    _cancelTokens.clear();
+    _dispatch.clear();
     _listeners.clear();
 
     for (final controller in _stateStreamControllers) {
@@ -585,7 +575,7 @@ final class StateStore<S, E> {
     String label,
     _AsyncBody<E> body,
   ) async {
-    final token = _acquireToken(key);
+    final token = _dispatch.acquireToken(key);
     final before = _accessor.current;
     final watch = _listeners.dispatches.isEmpty ? null : (Stopwatch()..start());
 
@@ -638,7 +628,7 @@ final class StateStore<S, E> {
 
       return DispatchFailure(e, st);
     } finally {
-      _releaseToken(key, token);
+      _dispatch.releaseToken(key, token);
     }
   }
 
@@ -726,7 +716,7 @@ final class StateStore<S, E> {
       cancelOnError: false,
     );
 
-    _streamSubs[key] = _ActiveStreamSubscription(subscription, label);
+    _dispatch.registerStream(key, subscription, label);
   }
 
   /// Закрывает один цикл "before → after" Stream-команды: сбрасывает
@@ -751,16 +741,15 @@ final class StateStore<S, E> {
   /// [addDispatchListener].
   ///
   /// No-op, если по [key] нет активной подписки (например, повторный
-  /// [cancelStreamKey] или отмена уже завершившегося потока).
+  /// [cancelStreamKey] или отмена уже завершившегося потока) — определяется
+  /// по `null`, который в этом случае возвращает `DispatchRegistry.cancelStream`.
   void _cancelStreamSubscription(Object key, CancelReason reason) {
-    final entry = _streamSubs.remove(key);
-    if (entry == null) return;
-
-    entry.subscription.cancel();
+    final label = _dispatch.cancelStream(key);
+    if (label == null) return;
 
     _listeners.notifyDispatch(
       _buildEvent(
-        label: entry.label,
+        label: label,
         before: _accessor.current,
         kind: DispatchKind.stream,
         cancelReason: reason,
@@ -777,17 +766,5 @@ final class StateStore<S, E> {
     if (_equals(_accessor.current, before)) return;
 
     _listeners.notifyChange(_accessor.current);
-  }
-
-  /// Отменяет предыдущий токен той же группы и создаёт новый.
-  CancelToken _acquireToken(Object key) {
-    _cancelTokens[key]?.cancel(CancelReason.superseded);
-
-    return _cancelTokens[key] = CancelToken();
-  }
-
-  /// Удаляет токен из реестра, если он не был заменён новым.
-  void _releaseToken(Object key, CancelToken token) {
-    if (_cancelTokens[key] == token) _cancelTokens.remove(key);
   }
 }

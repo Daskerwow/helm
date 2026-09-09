@@ -1,3 +1,16 @@
 {
-  "editor.fontSize": 16
+  "cmake.ignoreCMakeListsMissing": true,
+
+  // Автоматически форматировать код и расставлять виджеты при сохранении
+  "editor.formatOnSave": true,
+
+  // Включение цветных направляющих линий для Flutter-виджетов
+  "flutter.uiGuides": true,
+
+  // Включение закрывающих серых меток в конце виджетов (например, // Scaffold)
+  "dart.closingLabels": true,
+
+  // Включение и настройка встроенного раскрасчика парных скобок
+  "editor.bracketPairsColorization.enabled": true,
+  "editor.guides.bracketPairs": "active"
 }

@@ -14,16 +14,16 @@ void main() {
     final st1 = _trace();
     final st2 = _trace();
 
-    final a = Loadable<int>.error('same message', st1);
-    final b = Loadable<int>.error('same message', st2);
+    final a = Loadable<int>.error('same message', stackTrace: st1);
+    final b = Loadable<int>.error('same message', stackTrace: st2);
 
     expect(a == b, isFalse);
   });
 
   test('LoadableError с одинаковым stackTrace и error — равны', () {
     final st = _trace();
-    final a = Loadable<int>.error('x', st);
-    final b = Loadable<int>.error('x', st);
+    final a = Loadable<int>.error('x', stackTrace: st);
+    final b = Loadable<int>.error('x', stackTrace: st);
 
     expect(a == b, isTrue);
   });

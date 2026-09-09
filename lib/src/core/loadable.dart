@@ -41,8 +41,11 @@ sealed class const Loadable<T>() {
 
   const factory data(T value) = LoadableData<T>;
 
-  /// [previous] — то же, что и в [Loadable.loading].
-  const factory error(Object error, [StackTrace? stackTrace, T? previous]) =
+  /// [previous] — то же, что и в [Loadable.loading]. Именованные (а не
+  /// позиционные) [stackTrace]/[previous] позволяют передать только
+  /// [previous] без обязательного явного `null` для [stackTrace]:
+  /// `Loadable.error(e, previous: old)` вместо `Loadable.error(e, null, old)`.
+  const factory error(Object error, {StackTrace? stackTrace, T? previous}) =
       LoadableError<T>;
 
   bool get isLoading => this is LoadableLoading<T>;
@@ -141,10 +144,10 @@ final class const LoadableData<T>(final T value) extends Loadable<T> {
 }
 
 final class const LoadableError<T>(
-  final Object error, [
+  final Object error, {
   final StackTrace? stackTrace,
   final T? previous,
-]) extends Loadable<T> {
+}) extends Loadable<T> {
   /// Сравнивает [error], [stackTrace] и [previous]. `StackTrace` не
   /// переопределяет `==` содержательно (сравнение по идентичности) — это
   /// заодно отличает повторный тот же коммит (тот же `StackTrace` инстанс)
