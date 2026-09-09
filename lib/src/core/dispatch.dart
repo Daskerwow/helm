@@ -121,18 +121,17 @@ final class const DispatchFailure<S>(
   final StackTrace stackTrace,
 ) extends DispatchResult<S>;
 
-/// Команда отменена до завершения — см. [CancelReason].
-///
-/// Состояние могло измениться: коммиты до отмены уже применены — Store лишь
-/// гарантирует, что коммиты *после* отмены игнорируются.
+/// Команда отменена до завершения.
 final class const DispatchCancelled<S>(
-  /// Команда того же `DispatchKeyed.dispatchKey` запущена повторно — предыдущий вызов вытеснен.
-  /// [CancelReason.superseded],
-
-  /// Явный `StateStore.cancel` / `StateStore.cancelAll`.
-  /// [CancelReason.userRequested],
-
-  /// Store закрыт через `StateStore.close`.
-  /// [CancelReason.storeClosed],
+  /// Причина отмены:
+  /// - [CancelReason.superseded] — команда того же
+  ///   `DispatchKeyed.dispatchKey` запущена повторно, предыдущий вызов
+  ///   вытеснен;
+  /// - [CancelReason.userRequested] — явный `StateStore.cancel` /
+  ///   `StateStore.cancelAll`;
+  /// - [CancelReason.storeClosed] — Store закрыт через `StateStore.close`.
+  ///
+  /// Состояние могло измениться: коммиты до отмены уже применены — Store
+  /// лишь гарантирует, что коммиты *после* отмены игнорируются.
   final CancelReason reason,
 ) extends DispatchResult<S>;

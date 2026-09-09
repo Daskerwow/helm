@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
-
 import 'state_storage.dart';
 import '../internal/internal.dart';
 import '../dispatch.dart';
@@ -76,10 +74,14 @@ final class _ListenerHub<S, E> {
         onError: _reportListenerError,
       );
 
+  // Печатает debug-only подсказку обычным `print` (а не `debugPrint` из
+  // `package:flutter/foundation.dart`) — этот файл часть чистого
+  // Dart-ядра (`package:helm/helm.dart`) без единого импорта из
+  // `package:flutter`, см. докстринг класса `StateStore` ниже.
   void _reportListenerError(Object error, StackTrace stackTrace) {
     if (_reportingError) {
       assert(() {
-        debugPrint(
+        print(
           'Helm: слушатель канала errors сам бросил исключение — '
           'дальнейшая эскалация невозможна: $error',
         );

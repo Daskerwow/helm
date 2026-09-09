@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 import 'state_access.dart';
 import 'cancel_token.dart';
 
@@ -26,6 +24,11 @@ import 'cancel_token.dart';
 ///
 /// В любом случае коммит после отмены остаётся тихим и безопасным исходом:
 /// [commit] никогда не бросает исключение из-за самой диагностики.
+///
+/// Печатает подсказку обычным `print` (а не `debugPrint` из
+/// `package:flutter/foundation.dart`) — этот файл часть чистого Dart-ядра
+/// (`package:helm/helm.dart`) без единого импорта из `package:flutter`, см.
+/// докстринг `StateStore`.
 final class const GuardedWriter<S>(
   final StateWriter<S> _inner,
   final CancelToken _token,
@@ -42,7 +45,7 @@ final class const GuardedWriter<S>(
   void commit(S nextState) {
     if (_token.isCancelled) {
       assert(() {
-        debugPrint(
+        print(
           'Helm: commit после отмены — команда $_commandLabel не проверяет '
           'cancel.isCancelled самостоятельно (коммит проигнорирован).',
         );

@@ -16,6 +16,13 @@ import 'helm_feature.dart';
 /// [featureOf]) — раньше идентичный `didUpdateWidget` (сравнить `feature` на
 /// `identical`, при смене вызвать [rebindFeature]) был дословно продублирован
 /// в каждом из трёх `State`.
+///
+/// Сам скелет "acquire → attach → пережить смену контроллера → release"
+/// вынесен в `FeatureSubscription` (`binding_utils.dart`) — тот же класс
+/// используют биндинги `feature.watch()`/`.select()`/`.effect()` в
+/// `helm_reactive.dart`. Здесь остаётся только специфика `State`:
+/// `initState`/`didUpdateWidget`/`dispose` и опциональный `setState` на
+/// смену контроллера.
 mixin _FeatureBindingState<S, E, W extends StatefulWidget> on State<W> {
   /// Токен фичи, к которому привязан этот `State` — обычно `widget.feature`.
   HelmFeature<S, E> get feature;
@@ -25,37 +32,35 @@ mixin _FeatureBindingState<S, E, W extends StatefulWidget> on State<W> {
   /// актуальным [feature] без дублирования этого сравнения в каждом `State`.
   HelmFeature<S, E> featureOf(W widget);
 
-  /// Переподключается на новый контроллер после `overrideWith`/`dispose`
-  /// фичи — см. [_onLifecycle].
-  late HelmController<S, E> controller;
-
   /// `true` (по умолчанию) — смена контроллера вызывает `setState`.
   /// [HelmListener] переопределяет в `false`: его `build()` не зависит от
   /// состояния фичи.
   bool get rebuildsOnControllerSwap => true;
 
+  late FeatureSubscription<S, E> _subscription;
+
+  /// Переподключается на новый контроллер после `overrideWith`/`dispose`
+  /// фичи — управляется [_subscription].
+  HelmController<S, E> get controller => _subscription.controller;
+
+  FeatureSubscription<S, E> _createSubscription() => FeatureSubscription<S, E>(
+    feature,
+    attach: onBind,
+    detach: onUnbind,
+    // Если State уже не mounted, весь обмен контроллером (а значит и
+    // onBind/onUnbind) пропускается целиком, а не только реакция setState
+    // на него — тот же гейт, что и в оригинальном _onLifecycle
+    // (`if (!mounted) return;` ДО swapController).
+    shouldSwap: () => mounted,
+    onControllerSwapped: () {
+      if (rebuildsOnControllerSwap) setState(() {});
+    },
+  );
+
   @override
   void initState() {
     super.initState();
-    controller = feature.acquire();
-    feature.lifecycle.addListener(_onLifecycle);
-    onBind(controller);
-  }
-
-  void _onLifecycle() {
-    if (!mounted) return;
-    final fresh = swapController<S, E>(
-      feature: feature,
-      current: controller,
-      removeListener: onUnbind,
-      addListener: onBind,
-    );
-    if (fresh == null) return;
-    if (rebuildsOnControllerSwap) {
-      setState(() => controller = fresh);
-    } else {
-      controller = fresh;
-    }
+    _subscription = _createSubscription();
   }
 
   @override
@@ -68,19 +73,13 @@ mixin _FeatureBindingState<S, E, W extends StatefulWidget> on State<W> {
   /// Вызывается из [didUpdateWidget], когда сам токен [HelmFeature]
   /// сменился на другой объект — например, виджету передали другую фичу.
   void rebindFeature(HelmFeature<S, E> oldFeature) {
-    oldFeature.lifecycle.removeListener(_onLifecycle);
-    onUnbind(controller);
-    oldFeature.release();
-    controller = feature.acquire();
-    onBind(controller);
-    feature.lifecycle.addListener(_onLifecycle);
+    _subscription.dispose();
+    _subscription = _createSubscription();
   }
 
   @override
   void dispose() {
-    feature.lifecycle.removeListener(_onLifecycle);
-    onUnbind(controller);
-    feature.release();
+    _subscription.dispose();
     super.dispose();
   }
 

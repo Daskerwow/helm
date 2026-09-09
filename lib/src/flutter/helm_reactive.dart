@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 
 import 'binding_utils.dart';
-import 'helm_controller.dart';
 import 'helm_feature.dart';
 
 /// [StatelessWidget], умеющий `feature.watch()`/`.select()`/`.effect()`
@@ -47,99 +46,69 @@ abstract class _Binding {
   void dispose();
 }
 
-/// Общий скелет для [_WatchBinding]/[_SelectBinding]/[_EffectBinding]:
-/// acquire фичи, подписка на конкретный вид слушателя (решает подкласс через
-/// [attachListener]/[detachListener]), переподключение к новому контроллеру
-/// после `overrideWith`/принудительного `dispose` фичи ([_onLifecycle], тот
-/// же паттерн [swapController], что и в биндингах `State`), release в
-/// [dispose]. Устраняет тройное дублирование этого скелета между тремя
-/// видами биндингов — они отличаются только тем, что именно вешают на
-/// контроллер и что делают при его смене ([onControllerSwapped]).
-abstract class _FeatureBinding<S, E> implements _Binding {
-  _FeatureBinding(this.feature) : controller = feature.acquire();
-
-  final HelmFeature<S, E> feature;
-  HelmController<S, E> controller;
-
-  /// Вешает специфичный для подкласса слушатель на [controller].
-  void attachListener(HelmController<S, E> controller);
-
-  /// Снимает слушатель, навешенный [attachListener].
-  void detachListener(HelmController<S, E> controller);
-
-  /// Вызывается сразу после переподключения к новому контроллеру — по
-  /// умолчанию ничего не делает; [_WatchBinding]/[_SelectBinding] дёргают
-  /// им перерасчёт/колбэк ребилда, [_EffectBinding] — сам эффект.
-  void onControllerSwapped() {}
-
-  /// Довершает инициализацию — вешает слушатель и подписывается на
-  /// [HelmFeature.lifecycle]. Вызывается конструктором подкласса ПОСЛЕ
-  /// того, как он проинициализировал собственные поля (например,
-  /// закэшированное значение selector'а): иначе виртуальный вызов
-  /// [attachListener] из тела конструктора базового класса сработал бы
-  /// раньше, чем эти поля готовы.
-  void start() {
-    attachListener(controller);
-    feature.lifecycle.addListener(_onLifecycle);
-  }
-
-  void _onLifecycle() {
-    final fresh = swapController<S, E>(
-      feature: feature,
-      current: controller,
-      removeListener: detachListener,
-      addListener: attachListener,
+/// Общий framework-агностичный скелет "acquire → attach → пережить смену
+/// контроллера → release" вынесен в `FeatureSubscription`
+/// (`binding_utils.dart`) — используется и здесь, и `_FeatureBindingState`
+/// в `helm_builder.dart`, устраняя дублирование, которое раньше
+/// поддерживалось отдельно в двух местах. [_WatchBinding]/[_SelectBinding]/
+/// [_EffectBinding] ниже — тонкие обёртки поверх [FeatureSubscription]:
+/// каждая решает только, что именно вешать на контроллер ([attach]/
+/// [detach], переданные в конструктор [FeatureSubscription]) и что делать
+/// при смене контроллера (`onControllerSwapped`).
+class _WatchBinding<S, E>(
+  HelmFeature<S, E> feature,
+  final VoidCallback _onChanged,
+) implements _Binding {
+  this {
+    _sub = FeatureSubscription<S, E>(
+      feature,
+      attach: (c) => c.addListener(_onChanged),
+      detach: (c) => c.removeListener(_onChanged),
+      onControllerSwapped: _onChanged,
     );
-    if (fresh == null) return;
-    controller = fresh;
-    onControllerSwapped();
   }
 
+  late final FeatureSubscription<S, E> _sub;
+
+  S get value => _sub.controller.state;
+
   @override
-  void dispose() {
-    detachListener(controller);
-    feature.lifecycle.removeListener(_onLifecycle);
-    feature.release();
-  }
+  void dispose() => _sub.dispose();
 }
 
-class _WatchBinding<S, E> extends _FeatureBinding<S, E> {
-  _WatchBinding(super.feature, this._onChanged) {
-    start();
-  }
-
-  final VoidCallback _onChanged;
-
-  S get value => controller.state;
-
-  @override
-  void attachListener(HelmController<S, E> controller) =>
-      controller.addListener(_onChanged);
-
-  @override
-  void detachListener(HelmController<S, E> controller) =>
-      controller.removeListener(_onChanged);
-
-  @override
-  void onControllerSwapped() => _onChanged();
-}
-
-class _SelectBinding<S, E, R> extends _FeatureBinding<S, E> {
-  _SelectBinding(super.feature, this.selector, this._onChanged) {
-    _value = selector(controller.state);
-    start();
-  }
+class _SelectBinding<S, E, R>(
+  HelmFeature<S, E> feature,
 
   /// Переприсваивается на каждый вызов [HelmFeatureReactive.select], чтобы
   /// замыкание всегда было свежим.
-  R Function(S state) selector;
-  final VoidCallback _onChanged;
+  var R Function(S state) selector,
+  final VoidCallback _onChanged,
+) implements _Binding {
+  this {
+    _sub = FeatureSubscription<S, E>(
+      feature,
+      // attach сам инициализирует _value (тем же приёмом, что и
+      // `_HelmSelectorState.onBind` в helm_builder.dart) — благодаря этому
+      // не нужна отдельная фаза "доинициализировать поля до подписки":
+      // attach вызывается синхронно из конструктора FeatureSubscription, и
+      // _value гарантированно готово раньше, чем что-либо сможет вызвать
+      // _listener.
+      attach: (c) {
+        _value = selector(c.state);
+        c.addListener(_listener);
+      },
+      detach: (c) => c.removeListener(_listener),
+      onControllerSwapped: _listener,
+    );
+  }
+
+  late final FeatureSubscription<S, E> _sub;
   late R _value;
 
   R get value => _value;
 
   void _listener() {
-    final next = selector(controller.state);
+    final next = selector(_sub.controller.state);
     if (next != _value) {
       _value = next;
       _onChanged();
@@ -154,25 +123,27 @@ class _SelectBinding<S, E, R> extends _FeatureBinding<S, E> {
   /// фичи. Не вызывает [_onChanged] — мы уже внутри текущего `build()`,
   /// повторный `markNeedsBuild()` здесь не нужен.
   void resync() {
-    final next = selector(controller.state);
+    final next = selector(_sub.controller.state);
     if (next != _value) _value = next;
   }
 
   @override
-  void attachListener(HelmController<S, E> controller) =>
-      controller.addListener(_listener);
-
-  @override
-  void detachListener(HelmController<S, E> controller) =>
-      controller.removeListener(_listener);
-
-  @override
-  void onControllerSwapped() => _listener();
+  void dispose() => _sub.dispose();
 }
 
-class _EffectBinding<S, E> extends _FeatureBinding<S, E> {
-  _EffectBinding(super.feature, this.effect) {
-    start();
+class _EffectBinding<S, E>(
+  HelmFeature<S, E> feature,
+
+  /// Переприсваивается на каждый вызов [HelmFeatureReactive.effect].
+  var void Function(S state) effect,
+) implements _Binding {
+  this {
+    _sub = FeatureSubscription<S, E>(
+      feature,
+      attach: (c) => c.addListener(_listener),
+      detach: (c) => c.removeListener(_listener),
+      onControllerSwapped: _handleControllerSwapped,
+    );
 
     // Первый вызов — после текущего кадра, а не синхронно во время build(),
     // как и эффекты в hooks-библиотеках. [_disposed] защищает от вызова на
@@ -182,7 +153,7 @@ class _EffectBinding<S, E> extends _FeatureBinding<S, E> {
     //
     // [_initialCallDone] защищает от ДВОЙНОГО вызова: если lifecycle фичи
     // сработал (overrideWith/принудительный dispose) раньше, чем успел
-    // выполниться этот post-frame callback, [onControllerSwapped] уже
+    // выполниться этот post-frame callback, [_handleControllerSwapped] уже
     // вызвал [effect] с актуальным состоянием нового контроллера — сам
     // post-frame callback в этом случае должен стать no-op, а не позвать
     // effect() второй раз тем же кадром с тем же (или уже следующим)
@@ -190,40 +161,39 @@ class _EffectBinding<S, E> extends _FeatureBinding<S, E> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_disposed || _initialCallDone) return;
       _initialCallDone = true;
-      effect(controller.state);
+      effect(_sub.controller.state);
     });
   }
 
-  /// Переприсваивается на каждый вызов [HelmFeatureReactive.effect].
-  void Function(S state) effect;
-
+  late final FeatureSubscription<S, E> _sub;
   bool _disposed = false;
 
   /// `true`, если начальный вызов [effect] уже случился — либо из
   /// post-frame callback конструктора, либо (раньше него) из
-  /// [onControllerSwapped].
+  /// [_handleControllerSwapped].
   bool _initialCallDone = false;
 
-  void _listener() => effect(controller.state);
+  void _listener() => effect(_sub.controller.state);
 
-  @override
-  void attachListener(HelmController<S, E> controller) =>
-      controller.addListener(_listener);
-
-  @override
-  void detachListener(HelmController<S, E> controller) =>
-      controller.removeListener(_listener);
-
-  @override
-  void onControllerSwapped() {
+  /// Именованный метод, а не инлайн-замыкание прямо в аргументах
+  /// конструктора — так явно видно, что `_sub`/`effect`/`_initialCallDone`
+  /// читаются в момент ВЫЗОВА этого метода (когда `_sub` уже точно
+  /// присвоено), а не в момент создания замыкания (когда `_sub` ещё не
+  /// присвоено — мы всё ещё внутри вычисления аргументов конструктора,
+  /// которому предстоит быть присвоенным в `_sub`). Технически инлайн-
+  /// замыкание было бы так же корректно (Dart захватывает переменные по
+  /// ссылке, а первый вызов колбэка в любом случае произойдёт не раньше,
+  /// чем в следующем событии), но именованный метод не заставляет
+  /// читающего код держать это рассуждение в голове.
+  void _handleControllerSwapped() {
     _initialCallDone = true;
-    effect(controller.state);
+    effect(_sub.controller.state);
   }
 
   @override
   void dispose() {
     _disposed = true;
-    super.dispose();
+    _sub.dispose();
   }
 }
 

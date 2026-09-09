@@ -44,6 +44,19 @@
 /// `addDispatchListener`) — один "плохой" слушатель (например, упавший
 /// аналитический хук) не должен блокировать доставку события остальным
 /// (см. `StateStore._ListenerHub` в `state_store.dart`).
+///
+/// ### Гарантия восстановления [_notificationCallStackDepth]
+///
+/// Тело цикла в [notifyListeners] обёрнуто в `try/finally`: если слушатель
+/// бросает исключение (в режиме без `onError`) или сам переданный `onError`
+/// бросает исключение при обработке чужой ошибки — счётчик вложенности
+/// [_notificationCallStackDepth] всё равно корректно декрементируется, а
+/// накопленные tombstone-слоты (если реентрантно что-то удалили до
+/// исключения) всё равно компактизируются. Без этой гарантии однажды
+/// брошенное исключение навсегда переводило бы список в "реентрантный"
+/// режим: [removeListener]/[clearListener] дальше работали бы только через
+/// пометку `null` без физической компактизации — внутренний массив рос бы
+/// бесконечно при каждом последующем add/remove.
 final class CallbackList<T> {
   List<T?> _listeners = List<T?>.filled(0, null);
 
@@ -146,6 +159,10 @@ final class CallbackList<T> {
   /// [onError], если передан, включает изоляцию ошибок между слушателями —
   /// см. докстринг класса, раздел "Изоляция ошибок слушателей". Без
   /// [onError] поведение как раньше: первое исключение прерывает проход.
+  ///
+  /// Счётчик вложенности [_notificationCallStackDepth] и последующая
+  /// компактизация гарантированно восстанавливаются даже при исключении —
+  /// см. докстринг класса, раздел "Гарантия восстановления".
   void notifyListeners(
     void Function(T listener) callback, {
     void Function(Object error, StackTrace stackTrace)? onError,
@@ -153,25 +170,28 @@ final class CallbackList<T> {
     if (_count == 0) return;
 
     _notificationCallStackDepth++;
-    final end = _count;
-    for (var i = 0; i < end; i++) {
-      final listener = _listeners[i];
-      if (listener == null) continue;
+    try {
+      final end = _count;
+      for (var i = 0; i < end; i++) {
+        final listener = _listeners[i];
+        if (listener == null) continue;
 
-      if (onError == null) {
-        callback(listener);
-      } else {
-        try {
+        if (onError == null) {
           callback(listener);
-        } catch (e, st) {
-          onError(e, st);
+        } else {
+          try {
+            callback(listener);
+          } catch (e, st) {
+            onError(e, st);
+          }
         }
       }
-    }
-    _notificationCallStackDepth--;
+    } finally {
+      _notificationCallStackDepth--;
 
-    if (_notificationCallStackDepth == 0 && _reentrantlyRemovedListeners > 0) {
-      _compactAfterReentrantRemoval();
+      if (_notificationCallStackDepth == 0 && _reentrantlyRemovedListeners > 0) {
+        _compactAfterReentrantRemoval();
+      }
     }
   }
 

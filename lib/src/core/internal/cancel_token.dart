@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 import 'callback_list.dart';
 
 /// Причина отмены — см. [CancelToken.reason] и `DispatchCancelled`.
@@ -57,11 +55,17 @@ final class CancelToken {
     // колбэка репортится тем же debug-only способом, что и диагностика
     // `GuardedWriter` — печатается в debug-режиме, но не прерывает вызов
     // остальных `whenCancelled`-колбэков и никогда не бросает наружу.
+    //
+    // Используем обычный `print` (а не `debugPrint` из
+    // `package:flutter/foundation.dart`): этот файл — часть чистого
+    // Dart-ядра (`package:helm/helm.dart`) без единого импорта из
+    // `package:flutter`, чтобы Store можно было использовать в CLI,
+    // на сервере (`dart:io`), в изоляте — где угодно, где есть Dart.
     listeners?.notifyListeners(
       (callback) => callback(),
       onError: (error, stackTrace) {
         assert(() {
-          debugPrint(
+          print(
             'Helm: колбэк CancelToken.whenCancelled бросил исключение при '
             'отмене — остальные колбэки всё равно вызваны: $error',
           );
