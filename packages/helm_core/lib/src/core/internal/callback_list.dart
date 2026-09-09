@@ -189,7 +189,8 @@ final class CallbackList<T> {
     } finally {
       _notificationCallStackDepth--;
 
-      if (_notificationCallStackDepth == 0 && _reentrantlyRemovedListeners > 0) {
+      if (_notificationCallStackDepth == 0 &&
+          _reentrantlyRemovedListeners > 0) {
         _compactAfterReentrantRemoval();
       }
     }

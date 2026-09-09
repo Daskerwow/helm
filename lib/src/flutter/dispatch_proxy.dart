@@ -43,7 +43,13 @@ mixin DispatchProxy<S, E> {
 
   void cancel<U>() => dispatchTarget.cancel<U>();
 
+  /// Отменяет async-команду с явным [DispatchKeyed.dispatchKey].
+  void cancelKey(Object key) => dispatchTarget.cancelKey(key);
+
   void cancelAll() => dispatchTarget.cancelAll();
 
   void cancelStream<U>() => dispatchTarget.cancelStream<U>();
+
+  /// Отменяет Stream-команду с явным [DispatchKeyed.dispatchKey].
+  void cancelStreamKey(Object key) => dispatchTarget.cancelStreamKey(key);
 }

@@ -45,3 +45,13 @@ changes, `0.x.y` — только багфиксы и документация.
 ## [Unreleased]
 
 - (следующие изменения — сюда)
+# 0.2.0
+
+Breaking change: `StreamCommand.execute` and `StreamSideEffect.execute` now
+receive `CancelToken`. Check it before expensive work and before every
+commit; Helm additionally rejects commits after cancellation.
+
+- Fixed the `StateStore.effects` stream: it now forwards every side-effect.
+- Completed stream subscriptions are removed from the dispatch registry.
+- `HelmFeature.overrideWith` now replaces active Stores correctly.
+- Internal implementation types are no longer exported from the public API.

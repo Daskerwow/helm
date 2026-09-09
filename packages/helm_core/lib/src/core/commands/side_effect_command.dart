@@ -66,12 +66,16 @@ abstract interface class const AsyncSideEffect<S, E>() {
 ///   final ChatSocket _socket;
 ///
 ///   @override
-///   Stream<ChatEffect?> execute(reader, writer) => _socket.messages.map((msg) {
+///   Stream<ChatEffect?> execute(reader, writer, cancel) => _socket.messages.map((msg) {
 ///         writer.commit(reader.current.copyWith(messages: [...reader.current.messages, msg]));
 ///         return msg.isSystem ? null : MessageReceived(msg);
 ///       });
 /// }
 /// ```
 abstract interface class const StreamSideEffect<S, E>() {
-  Stream<E?> execute(StateReader<S> reader, StateWriter<S> writer);
+  Stream<E?> execute(
+    StateReader<S> reader,
+    StateWriter<S> writer,
+    CancelToken cancel,
+  );
 }

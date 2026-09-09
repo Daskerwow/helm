@@ -130,6 +130,8 @@ final class const DispatchCancelled<S>(
   /// - [CancelReason.userRequested] — явный `StateStore.cancel` /
   ///   `StateStore.cancelAll`;
   /// - [CancelReason.storeClosed] — Store закрыт через `StateStore.close`.
+  /// - [CancelReason.commandFailed] — Stream-команда не смогла стартовать;
+  ///   это внутреннее состояние защиты writer, а не результат public dispatch.
   ///
   /// Состояние могло измениться: коммиты до отмены уже применены — Store
   /// лишь гарантирует, что коммиты *после* отмены игнорируются.

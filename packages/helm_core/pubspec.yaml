@@ -1,0 +1,13 @@
+name: helm_core
+description: Pure Dart state-management runtime for Helm.
+version: 0.2.0
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  collection: ^1.19.1
+
+dev_dependencies:
+  lints: ^6.1.0

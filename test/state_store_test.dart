@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:helm/helm.dart';
 
@@ -14,6 +16,29 @@ final class _Fail implements AsyncCommand<_CounterState> {
   @override
   Future<void> execute(reader, writer, cancel) async {
     throw StateError('boom');
+  }
+}
+
+final class _RetainedStream implements StreamCommand<int> {
+  _RetainedStream(this.source);
+
+  final Stream<void> source;
+  StateWriter<int>? writer;
+
+  @override
+  Stream<void> execute(reader, nextWriter, cancel) {
+    writer = nextWriter;
+    return source;
+  }
+}
+
+final class _ThrowingStream implements StreamCommand<int> {
+  StateWriter<int>? writer;
+
+  @override
+  Stream<void> execute(reader, nextWriter, cancel) {
+    writer = nextWriter;
+    throw StateError('stream setup failed');
   }
 }
 
@@ -213,6 +238,66 @@ void main() {
       store.dispatchSync(const _Increment());
 
       expect(seen, [1]);
+      store.close();
+    });
+  });
+
+  group('streams', () {
+    test('effects Stream получает side-эффекты', () async {
+      final store = StateStore<int, String>(initialState: 0);
+      final received = <String>[];
+      final subscription = store.effects.listen(received.add);
+
+      store.dispatchSyncWithEffect(
+        const SetStateWithEffectCommand<int, String>(1, effect: 'saved'),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(received, ['saved']);
+      await subscription.cancel();
+      store.close();
+    });
+
+    test('завершённая stream-команда не отменяется повторно', () async {
+      final source = StreamController<void>();
+      final store = StateStore<int, Never>(initialState: 0);
+      final events = <DispatchEvent<int>>[];
+      store.addDispatchListener(events.add);
+
+      store.dispatchStream(_RetainedStream(source.stream));
+      await source.close();
+      await Future<void>.delayed(Duration.zero);
+      store.cancelStream<_RetainedStream>();
+
+      expect(events.where((event) => event.isCancelled), isEmpty);
+      store.close();
+    });
+
+    test('writer stream-команды не принимает commit после отмены', () async {
+      final source = StreamController<void>();
+      final command = _RetainedStream(source.stream);
+      final store = StateStore<int, Never>(initialState: 0);
+
+      store.dispatchStream(command);
+      store.cancelStream<_RetainedStream>();
+      command.writer!.commit(42);
+
+      expect(store.state, 0);
+      await source.close();
+      store.close();
+    });
+
+    test('writer неактивен, если Stream-команда упала при создании', () {
+      final command = _ThrowingStream();
+      final store = StateStore<int, Never>(initialState: 0);
+      final errors = <Object>[];
+      store.addErrorListener((error, _) => errors.add(error));
+
+      store.dispatchStream(command);
+      command.writer!.commit(42);
+
+      expect(errors.single, isA<StateError>());
+      expect(store.state, 0);
       store.close();
     });
   });

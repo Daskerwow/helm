@@ -1,10 +1,8 @@
-/// Helm — лёгкая, предсказуемая библиотека управления состоянием для Dart.
+/// Flutter-facing entry point for Helm.
 ///
-/// Этот файл — **ядро**: чистый Dart, ни одного импорта из `package:flutter`.
-/// Store не знает о существовании какого-либо UI-фреймворка или state
-/// manager'а — он умеет только одно: принимать команды и синхронно
-/// публиковать изменения состояния. Мост во Flutter — отдельный файл,
-/// `package:helm/flutter.dart` (см. его докстринг про выбор нужного API).
+/// Framework-independent runtime lives in `package:helm_core/helm_core.dart`.
+/// This package re-exports it for Flutter applications; the Flutter bridge is
+/// available separately as `package:helm/flutter.dart`.
 ///
 /// ### Три принципа
 /// - **Явность** — каждый исход диспатча типизирован через [DispatchResult].
@@ -46,4 +44,4 @@
 /// содержательного сравнения — см. их докстринги.
 library;
 
-export 'src/core/core.dart';
+export 'package:helm_core/helm_core.dart';

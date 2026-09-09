@@ -123,6 +123,7 @@ final class const WatchCommand<T>(final Stream<T> Function() source)
   Stream<void> execute(
     StateReader<Loadable<T>> reader,
     StateWriter<Loadable<T>> writer,
+    CancelToken cancel,
   ) {
     if (reader.current is! LoadableData<T>) {
       writer.commit(Loadable.loading(reader.current.valueOrNull));

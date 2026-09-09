@@ -3,24 +3,26 @@ description: >-
   Лёгкая, предсказуемая библиотека управления состоянием для Dart и Flutter:
   явные исходы диспатча, отменяемые асинхронные команды, синхронная
   публикация изменений без Stream-накладных расходов.
-version: 0.1.0
+version: 0.2.0
+
+workspace:
+  - packages/helm_core
 # repository: https://github.com/my_org/my_repo
 
 environment:
   sdk: ^3.13.0
 
-# Ядро не зависит от Flutter. Виджет-слой (Riverpod, Provider, Bloc и т.д.)
-# подключает Helm как обычный Dart-пакет и сам решает, как связать
-# StateStore.states/effects со своими провайдерами — см. CHANGES.md.
+# Чистое Dart-ядро находится в локальном пакете helm_core. Этот пакет —
+# Flutter-фасад и виджетный адаптер поверх него.
 dependencies:
   flutter:
     sdk: flutter
-  flutter_test:
-    sdk: flutter
-  collection: ^1.19.1
-  material_ui: ^1.1.1
+  helm_core:
+    ^0.2.0
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
   lints: ^6.1.0
   test: ^1.31.1
 

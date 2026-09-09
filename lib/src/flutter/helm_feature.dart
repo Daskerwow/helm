@@ -26,6 +26,8 @@ abstract interface class HelmFeatureHandle {
   /// Актуальный [Listenable] прямо сейчас, без изменения refCount — см.
   /// [HelmFeature.currentController].
   Listenable get currentListenable;
+
+  void disposeIfUnretained();
 }
 
 /// Стек активных трекеров зависимостей для [HelmComputed]. Не для
@@ -199,6 +201,11 @@ final class HelmFeature<S, E>
   @override
   Listenable get currentListenable => _ctrl;
 
+  @override
+  void disposeIfUnretained() {
+    if (autoDispose && _refCount == 0) _disposeInternal();
+  }
+
   /// Подписка на изменения состояния в обход виджетов — участвует в том же
   /// подсчёте ссылок, что и `HelmBuilder`/`HelmSelector`/`HelmListener`:
   /// вызывает [acquire], а вызов возвращённой функции — [release]. Для
@@ -331,8 +338,8 @@ final class HelmFeature<S, E>
     _overrideStack.add(_factory);
     final expectedStackLength = _overrideStack.length;
 
-    if (isActive) _disposeInternal();
     _factory = create;
+    if (isActive) _disposeInternal();
 
     var restored = false;
     return () {
@@ -348,10 +355,9 @@ final class HelmFeature<S, E>
         );
       }
 
+      final previous = _overrideStack.removeLast();
+      _factory = previous;
       if (isActive) _disposeInternal();
-      _factory = _overrideStack.isNotEmpty
-          ? _overrideStack.removeLast()
-          : _factory;
     };
   }
 

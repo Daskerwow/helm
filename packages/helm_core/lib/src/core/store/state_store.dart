@@ -176,6 +176,13 @@ final class _ListenerHub<S, E> {
 /// момент вызова, независимо от итогового исхода dispatch'а и от того,
 /// сколько раз команда коммитит за одно выполнение.
 ///
+/// ### Неизменяемость состояния
+///
+/// `S` должен быть неизменяемым value-объектом. Никогда не меняй текущий
+/// `List`/`Map`/`Set` на месте: Store хранит только ссылку на прошлое
+/// значение, поэтому такая мутация неотличима от отсутствия изменения.
+/// Создавай новый state и неизменяемые копии его коллекций в каждой команде.
+///
 /// ### Изоляция ошибок слушателей
 ///
 /// Исключение одного слушателя [addOnChanged]/[addOnEffect]/
@@ -248,7 +255,8 @@ final class StateStore<S, E> {
   /// [states] не получили бы `done`-событие при закрытии Store.
   final _stateStreamControllers = <MultiStreamController<S>>{};
 
-  StreamController<E>? _effectsController;
+  Stream<E>? _effects;
+  final _effectStreamControllers = <MultiStreamController<E>>{};
 
   bool _closed = false;
 
@@ -317,10 +325,10 @@ final class StateStore<S, E> {
       return;
     }
 
-    controller.add(_accessor.current);
+    controller.addSync(_accessor.current);
     _stateStreamControllers.add(controller);
 
-    final unsubscribe = addOnChanged(controller.add);
+    final unsubscribe = addOnChanged(controller.addSync);
     controller.onCancel = () {
       unsubscribe();
       _stateStreamControllers.remove(controller);
@@ -330,12 +338,19 @@ final class StateStore<S, E> {
   /// Broadcast-`Stream` side-эффектов — интероп-слой поверх [addOnEffect].
   /// Чистый поток событий: в отличие от [states], не несёт "текущего
   /// значения" и ничего не отправляет новому подписчику при подписке.
-  Stream<E> get effects {
-    final controller = _effectsController ??= StreamController<E>.broadcast(
-      sync: true,
-    );
-    return controller.stream;
-  }
+  Stream<E> get effects => _effects ??= Stream<E>.multi((controller) {
+    if (_closed) {
+      controller.close();
+      return;
+    }
+
+    _effectStreamControllers.add(controller);
+    final unsubscribe = addOnEffect(controller.addSync);
+    controller.onCancel = () {
+      unsubscribe();
+      _effectStreamControllers.remove(controller);
+    };
+  }, isBroadcast: true);
 
   /// Текущее состояние — синхронное чтение без подписки.
   S get state => _accessor.current;
@@ -368,17 +383,20 @@ final class StateStore<S, E> {
   /// же группой отмены (см. `DispatchKeyed`) уже активна — предыдущая
   /// подписка отменяется первой (см. [_cancelStreamSubscription]). После
   /// [close] — no-op.
-  void dispatchStream(StreamCommand<S> command) =>
-      _dispatchStream(command, (writer) => command.execute(_accessor, writer));
+  void dispatchStream(StreamCommand<S> command) => _dispatchStream(
+    command,
+    (writer, token) => command.execute(_accessor, writer, token),
+  );
 
   /// Подписывается на Stream-команду с side-эффектами. Та же семантика
   /// отмены предыдущей подписки, что и у [dispatchStream].
   void dispatchStreamWithEffect(StreamSideEffect<S, E> command) =>
       _dispatchStream(
         command,
-        (writer) => command.execute(_accessor, writer).map((effect) {
-          if (effect != null) _listeners.notifyEffect(effect);
-        }),
+        (writer, token) =>
+            command.execute(_accessor, writer, token).map((effect) {
+              if (effect != null) _listeners.notifyEffect(effect);
+            }),
       );
 
   /// Общее ядро [dispatchStream]/[dispatchStreamWithEffect]: отменяет
@@ -388,16 +406,26 @@ final class StateStore<S, E> {
   /// side-эффект на каждый элемент потока.
   void _dispatchStream(
     Object command,
-    Stream<void> Function(TrackingWriter<S> writer) execute,
+    Stream<void> Function(TrackingWriter<S> writer, CancelToken token) execute,
   ) {
     if (_closed) return;
 
     final key = _keyOf(command);
     _cancelStreamSubscription(key, CancelReason.superseded);
 
-    final writer = TrackingWriter<S>(_emittingWriter(), _accessor);
+    final label = _labelOf(command);
+    final token = CancelToken();
+    final writer = TrackingWriter<S>(_guardedWriter(token, label), _accessor);
 
-    _subscribeStream(key, _labelOf(command), execute(writer), writer);
+    try {
+      _subscribeStream(key, label, execute(writer, token), writer, token);
+    } catch (error, stackTrace) {
+      // Команда могла сохранить writer до синхронного исключения. Без
+      // инвалидирования такой writer сумел бы изменить Store уже после
+      // DispatchFailure, хотя активной подписки для него больше нет.
+      token.cancel(CancelReason.commandFailed);
+      _reportStreamError(label, error, stackTrace);
+    }
   }
 
   // ── Async dispatch ──────────────────────────────────────────────────────
@@ -515,12 +543,15 @@ final class StateStore<S, E> {
     _dispatch.clear();
     _listeners.clear();
 
-    for (final controller in _stateStreamControllers) {
+    for (final controller in _stateStreamControllers.toList(growable: false)) {
       controller.close();
     }
     _stateStreamControllers.clear();
 
-    _effectsController?.close();
+    for (final controller in _effectStreamControllers.toList(growable: false)) {
+      controller.close();
+    }
+    _effectStreamControllers.clear();
   }
 
   // ── Приватное ядро ──────────────────────────────────────────────────────
@@ -616,8 +647,20 @@ final class StateStore<S, E> {
     } catch (e, st) {
       watch?.stop();
 
-      _listeners.notifyError(e, st);
+      if (token.isCancelled) {
+        _listeners.notifyDispatch(
+          _buildEvent(
+            label: label,
+            before: before,
+            kind: DispatchKind.async,
+            elapsed: watch?.elapsed,
+            cancelReason: token.reason,
+          ),
+        );
+        return DispatchCancelled(token.reason!);
+      }
 
+      _listeners.notifyError(e, st);
       _listeners.notifyDispatch(
         _buildEvent(
           label: label,
@@ -627,7 +670,6 @@ final class StateStore<S, E> {
           error: e,
         ),
       );
-
       return DispatchFailure(e, st);
     } finally {
       _dispatch.releaseToken(key, token);
@@ -685,6 +727,7 @@ final class StateStore<S, E> {
     String label,
     Stream<void> stream,
     TrackingWriter<S> writer,
+    CancelToken token,
   ) {
     // Команда могла синхронно закоммитить до подписки на поток (например,
     // начальный Loadable.loading в WatchCommand). Публикация уже
@@ -694,31 +737,29 @@ final class StateStore<S, E> {
       _logStreamCycle(label, writer);
     }
 
-    final subscription = stream.listen(
+    late final StreamSubscription<void> subscription;
+    subscription = stream.listen(
       (_) {
         if (writer.hasChanged) _logStreamCycle(label, writer);
       },
-      onError: (Object e, StackTrace st) {
-        _listeners.notifyError(e, st);
-
-        _listeners.notifyDispatch(
-          _buildEvent(
-            label: label,
-            before: _accessor.current,
-            kind: DispatchKind.stream,
-            error: e,
-          ),
-        );
-
-        // `effects` намеренно не получает ошибки stream-команд: это только
-        // канал side-эффектов. Ошибка сообщается через [addErrorListener]
-        // (см. `_listeners.notifyError` выше) и [addDispatchListener], как
-        // и ошибка любой другой команды.
-      },
+      onError: (Object e, StackTrace st) => _reportStreamError(label, e, st),
+      onDone: () => _dispatch.releaseStream(key, subscription),
       cancelOnError: false,
     );
 
-    _dispatch.registerStream(key, subscription, label);
+    _dispatch.registerStream(key, subscription, label, token);
+  }
+
+  void _reportStreamError(String label, Object error, StackTrace stackTrace) {
+    _listeners.notifyError(error, stackTrace);
+    _listeners.notifyDispatch(
+      _buildEvent(
+        label: label,
+        before: _accessor.current,
+        kind: DispatchKind.stream,
+        error: error,
+      ),
+    );
   }
 
   /// Закрывает один цикл "before → after" Stream-команды: сбрасывает
@@ -746,7 +787,7 @@ final class StateStore<S, E> {
   /// [cancelStreamKey] или отмена уже завершившегося потока) — определяется
   /// по `null`, который в этом случае возвращает `DispatchRegistry.cancelStream`.
   void _cancelStreamSubscription(Object key, CancelReason reason) {
-    final label = _dispatch.cancelStream(key);
+    final label = _dispatch.cancelStream(key, reason);
     if (label == null) return;
 
     _listeners.notifyDispatch(

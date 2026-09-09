@@ -113,6 +113,7 @@ class HelmComputed<T>(
   /// внутренний вызов просто не выполняет вложенный пересчёт (внешний
   /// вызов и так пересчитает актуальное значение по завершении).
   bool _recomputing = false;
+  bool _recomputeRequested = false;
 
   /// См. докстринг класса, раздел "Диагностика забытого dispose()" — только
   /// debug-режим, мутации обёрнуты в `assert`.
@@ -128,11 +129,16 @@ class HelmComputed<T>(
 
   T _evaluate() {
     final tracked = <HelmFeatureHandle>{};
-
-    final result = trackHelmDependencies(_compute, tracked.add);
-    _syncDependencies(tracked);
-
-    return result;
+    try {
+      final result = trackHelmDependencies(_compute, tracked.add);
+      _syncDependencies(tracked);
+      return result;
+    } catch (_) {
+      for (final feature in tracked) {
+        feature.disposeIfUnretained();
+      }
+      rethrow;
+    }
   }
 
   void _syncDependencies(Set<HelmFeatureHandle> tracked) {
@@ -179,31 +185,37 @@ class HelmComputed<T>(
   }
 
   void _recompute() {
-    if (_recomputing) return;
+    if (_recomputing) {
+      _recomputeRequested = true;
+      return;
+    }
     _recomputing = true;
 
     try {
-      final tracked = <HelmFeatureHandle>{};
-      late final T next;
+      do {
+        _recomputeRequested = false;
+        final tracked = <HelmFeatureHandle>{};
+        late final T next;
 
-      try {
-        next = trackHelmDependencies(_compute, tracked.add);
-      } catch (e, st) {
+        try {
+          next = trackHelmDependencies(_compute, tracked.add);
+        } catch (e, st) {
+          _syncDependencies(tracked);
+          final handler = onError;
+          if (handler == null) rethrow;
+          handler(e, st);
+          // Обработчик ошибки может синхронно обновить зависимость. Такой
+          // update уже пометил _recomputeRequested, поэтому не выходим из
+          // цикла и даём следующей итерации вычислить актуальное значение.
+          continue;
+        }
         _syncDependencies(tracked);
 
-        final handler = onError;
-        if (handler == null) rethrow;
-        handler(e, st);
-
-        return;
-      }
-      _syncDependencies(tracked);
-
-      if (!_equals(next, _value)) {
-        _value = next;
-
-        notifyListeners();
-      }
+        if (!_equals(next, _value)) {
+          _value = next;
+          notifyListeners();
+        }
+      } while (_recomputeRequested);
     } finally {
       _recomputing = false;
     }

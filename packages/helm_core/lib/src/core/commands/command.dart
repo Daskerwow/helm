@@ -56,7 +56,7 @@ abstract interface class const AsyncCommand<S>() {
 ///   final GpsService _gps;
 ///
 ///   @override
-///   Stream<void> execute(reader, writer) =>
+///   Stream<void> execute(reader, writer, cancel) =>
 ///       _gps.positions.map((pos) => writer.commit(reader.current.copyWith(position: pos)));
 /// }
 ///
@@ -64,7 +64,11 @@ abstract interface class const AsyncCommand<S>() {
 /// store.cancelStream<LocationStreamCommand>();
 /// ```
 abstract interface class const StreamCommand<S>() {
-  Stream<void> execute(StateReader<S> reader, StateWriter<S> writer);
+  Stream<void> execute(
+    StateReader<S> reader,
+    StateWriter<S> writer,
+    CancelToken cancel,
+  );
 }
 
 /// Заменяет состояние на заранее известное значение — без отдельного класса

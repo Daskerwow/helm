@@ -12,6 +12,7 @@ import 'cancel_token.dart';
 final class const ActiveStreamSubscription(
   final StreamSubscription<void> subscription,
   final String label,
+  final CancelToken cancelToken,
 );
 
 /// Реестр "что сейчас летит и как это отменить" — активные async-токены
@@ -67,17 +68,31 @@ final class DispatchRegistry {
     Object key,
     StreamSubscription<void> subscription,
     String label,
+    CancelToken cancelToken,
   ) {
-    _streamSubs[key] = ActiveStreamSubscription(subscription, label);
+    _streamSubs[key] = ActiveStreamSubscription(
+      subscription,
+      label,
+      cancelToken,
+    );
+  }
+
+  /// Убирает завершившуюся подписку, но только если она всё ещё актуальна
+  /// для ключа: старая `onDone` не должна удалить уже запущенную замену.
+  void releaseStream(Object key, StreamSubscription<void> subscription) {
+    if (identical(_streamSubs[key]?.subscription, subscription)) {
+      _streamSubs.remove(key);
+    }
   }
 
   /// Отменяет активную stream-подписку по [key] и возвращает её лейбл —
   /// `null`, если по [key] нет активной подписки (например, повторная
   /// отмена или отмена уже завершившегося потока).
-  String? cancelStream(Object key) {
+  String? cancelStream(Object key, CancelReason reason) {
     final entry = _streamSubs.remove(key);
     if (entry == null) return null;
 
+    entry.cancelToken.cancel(reason);
     entry.subscription.cancel();
     return entry.label;
   }

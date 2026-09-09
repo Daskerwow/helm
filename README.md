@@ -6,19 +6,20 @@
 ## Структура пакета
 
 ```
+packages/helm_core/
+  lib/helm_core.dart       — чистое Dart-ядро
+  lib/src/core/            — StateStore и его внутренние детали
 lib/
-  helm.dart              — публичное ядро (чистый Dart, без Flutter)
-  flutter.dart            — публичный мост к Flutter
-  src/
-    core/                 — StateStore и всё, что вокруг него
-      internal/            — writer-декораторы и CallbackList (не публичный API)
-    flutter/               — HelmFeature, HelmController, виджет-биндинги
+  helm.dart                — Flutter-фасад, re-export helm_core
+  flutter.dart             — Flutter-виджеты и биндинги
+  src/flutter/             — HelmFeature, HelmController, виджет-биндинги
 ```
 
-Ядро (`src/core`) не содержит ни одного импорта `package:flutter` — это
-инвариант архитектуры, а не случайность (Dependency Inversion): `StateStore`
-можно использовать в CLI, на сервере или в изоляте. Мост (`src/flutter`)
-зависит от ядра, а не наоборот.
+`helm_core` не содержит Flutter-зависимостей и подходит для CLI, сервера и
+изолятов. Пакет `helm` зависит от него как от единственного runtime-модуля и
+содержит только Flutter-адаптер. Это направленная зависимость: UI зависит от
+ядра, но ядро не знает об UI. Репозиторий использует Dart Pub workspace, поэтому
+оба пакета можно проверять вместе и публиковать независимо.
 
 ## Три принципа
 

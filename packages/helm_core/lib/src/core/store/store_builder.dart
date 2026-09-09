@@ -60,7 +60,7 @@ final class StoreBuilder<S, E> {
   /// Компаратор "состояние не изменилось" — см. `StateStore.new`. Можно
   /// вызвать только один раз.
   StoreBuilder<S, E> withEquals(bool Function(S a, S b) equals) {
-    assert(_equals == null, 'withEquals уже вызван');
+    if (_equals != null) throw StateError('withEquals уже вызван');
     _equals = equals;
 
     return this;
@@ -69,7 +69,7 @@ final class StoreBuilder<S, E> {
   /// Персистентное хранилище — без вызова используется [StateMemoryStorage].
   /// Можно вызвать только один раз.
   StoreBuilder<S, E> withStorage(StateStorage<S> storage) {
-    assert(!_storageSet, 'withStorage уже вызван');
+    if (_storageSet) throw StateError('withStorage уже вызван');
     _storage = storage;
     _storageSet = true;
 
@@ -83,7 +83,9 @@ final class StoreBuilder<S, E> {
   StoreBuilder<S, E> withDroppedCommitHandler(
     void Function(String commandLabel, S nextState) handler,
   ) {
-    assert(_onDroppedCommit == null, 'withDroppedCommitHandler уже вызван');
+    if (_onDroppedCommit != null) {
+      throw StateError('withDroppedCommitHandler уже вызван');
+    }
     _onDroppedCommit = handler;
 
     return this;
