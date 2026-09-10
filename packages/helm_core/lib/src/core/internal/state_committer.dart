@@ -8,19 +8,12 @@ import 'store_event_bus.dart';
 ///
 /// Это единственная точка, знающая как совместить хранилище, компаратор и
 /// Observer-канал Store. Dispatch-стратегии отвечают только за свой lifecycle.
-final class StateCommitter<S, E> {
-  const StateCommitter({
-    required this._accessor,
-    required this._events,
-    required this._equals,
-    this.onDroppedCommit,
-  });
-
-  final StateAccessor<S> _accessor;
-  final StoreEventBus<S, E> _events;
-  final bool Function(S, S) _equals;
-  final void Function(String commandLabel, S nextState)? onDroppedCommit;
-
+final class const StateCommitter<S, E>({
+  required final StateAccessor<S> _accessor,
+  required final StoreEventBus<S, E> _events,
+  required final bool Function(S, S) _equals,
+  final void Function(String commandLabel, S nextState)? onDroppedCommit,
+}) {
   EmittingWriter<S> emittingWriter() =>
       EmittingWriter<S>(_accessor, _events.notifyChange, _equals);
 
