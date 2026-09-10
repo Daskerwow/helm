@@ -243,6 +243,28 @@ void main() {
   });
 
   group('streams', () {
+    test('states и effects завершаются при close', () async {
+      final store = StateStore<int, String>(initialState: 0);
+      var statesDone = false;
+      var effectsDone = false;
+      final states = store.states.listen(
+        (_) {},
+        onDone: () => statesDone = true,
+      );
+      final effects = store.effects.listen(
+        (_) {},
+        onDone: () => effectsDone = true,
+      );
+
+      store.close();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(statesDone, isTrue);
+      expect(effectsDone, isTrue);
+      await states.cancel();
+      await effects.cancel();
+    });
+
     test('effects Stream получает side-эффекты', () async {
       final store = StateStore<int, String>(initialState: 0);
       final received = <String>[];
